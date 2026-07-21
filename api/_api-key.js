@@ -14,6 +14,14 @@ const BROWSER_ORIGIN_PATTERNS = [
   ]),
 ];
 
+// Valid API keys. Prefer the SentinelIQ-namespaced secret, falling back to the
+// legacy WORLDMONITOR_VALID_KEYS so existing deployments keep working during the
+// rebrand migration (see docs/internal/sentineliq/rebrand.md).
+function getValidKeys() {
+  const raw = process.env.SENTINELIQ_VALID_KEYS || process.env.WORLDMONITOR_VALID_KEYS || '';
+  return raw.split(',').filter(Boolean);
+}
+
 function isDesktopOrigin(origin) {
   return Boolean(origin) && DESKTOP_ORIGIN_PATTERNS.some(p => p.test(origin));
 }
@@ -41,7 +49,7 @@ export function validateApiKey(req, options = {}) {
   // Desktop app — always require API key
   if (isDesktopOrigin(origin)) {
     if (!key) return { valid: false, required: true, error: 'API key required for desktop access' };
-    const validKeys = (process.env.WORLDMONITOR_VALID_KEYS || '').split(',').filter(Boolean);
+    const validKeys = getValidKeys();
     if (!validKeys.includes(key)) return { valid: false, required: true, error: 'Invalid API key' };
     return { valid: true, required: true };
   }
@@ -52,7 +60,7 @@ export function validateApiKey(req, options = {}) {
       return { valid: false, required: true, error: 'API key required' };
     }
     if (key) {
-      const validKeys = (process.env.WORLDMONITOR_VALID_KEYS || '').split(',').filter(Boolean);
+      const validKeys = getValidKeys();
       if (!validKeys.includes(key)) return { valid: false, required: true, error: 'Invalid API key' };
     }
     return { valid: true, required: forceKey };
@@ -60,7 +68,7 @@ export function validateApiKey(req, options = {}) {
 
   // Explicit key provided from unknown origin — validate it
   if (key) {
-    const validKeys = (process.env.WORLDMONITOR_VALID_KEYS || '').split(',').filter(Boolean);
+    const validKeys = getValidKeys();
     if (!validKeys.includes(key)) return { valid: false, required: true, error: 'Invalid API key' };
     return { valid: true, required: true };
   }

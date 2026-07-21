@@ -1,7 +1,7 @@
 /**
  * Canvas 2D renderer for branded happy story share cards.
  * Generates a 1080x1080 PNG from a NewsItem with warm gradient,
- * category badge, headline, source, date, and HappyMonitor watermark.
+ * category badge, headline, source, date, and SentinelIQ Happy watermark.
  */
 import type { NewsItem } from '@/types';
 import type { HappyContentCategory } from '@/services/positive-classifier';
@@ -168,11 +168,11 @@ export async function renderHappyShareCard(item: NewsItem): Promise<HTMLCanvasEl
   ctx.lineTo(SIZE - PAD, lineY);
   ctx.stroke();
 
-  // -- HappyMonitor branding --
+  // -- SentinelIQ Happy branding --
   const brandY = SIZE - 120;
   ctx.font = '700 28px Nunito, system-ui, sans-serif';
   ctx.fillStyle = '#C4A35A'; // gold
-  ctx.fillText('\u2600 HappyMonitor', PAD, brandY); // sun emoji (Unicode escape)
+  ctx.fillText('\u2600 SentinelIQ Happy', PAD, brandY); // sun emoji (Unicode escape)
 
   ctx.font = '400 22px Nunito, system-ui, sans-serif';
   ctx.fillStyle = '#A0AEC0';

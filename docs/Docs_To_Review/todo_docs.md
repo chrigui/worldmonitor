@@ -11,7 +11,7 @@
 ### 1.1 README.md Overhaul
 
 - [x] Update version badge to current release (currently shows outdated version)
-- [x] Add Finance Monitor variant to the variant table with correct subdomain
+- [x] Add SentinelIQ Finance variant to the variant table with correct subdomain
 - [x] Refresh architecture ASCII diagram to include Finance variant data flow
 - [x] Add "Repository Structure" section with annotated directory tree
 - [x] Update Quick Start section with current prerequisites (Node.js version, npm/pnpm)
@@ -377,7 +377,7 @@
 ### 13.1 Update `docs/DOCUMENTATION.md`
 
 - [ ] Update version badge from v2.1.4 to current version
-- [ ] Add Finance Monitor variant documentation (panels, features, data sources)
+- [ ] Add SentinelIQ Finance variant documentation (panels, features, data sources)
 - [ ] Refresh panel inventory to match current `src/components/` directory
 - [ ] Update entity count (verify 600+ is current)
 - [ ] Update feed count (verify 150+ is current)

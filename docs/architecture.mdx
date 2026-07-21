@@ -272,7 +272,7 @@ This was split into 24 per-domain thin entry points, each importing only its own
 
 ### Single-Deployment Variant Consolidation
 
-All five dashboard variants (SentinelIQ, Tech Monitor, Finance Monitor, Commodity Monitor, Happy Monitor) serve from a **single Vercel deployment**. The variant is determined at runtime by hostname detection:
+All five dashboard variants (SentinelIQ, SentinelIQ Tech, SentinelIQ Finance, SentinelIQ Commodity, SentinelIQ Happy) serve from a **single Vercel deployment**. The variant is determined at runtime by hostname detection:
 
 | Hostname | Variant |
 | --- | --- |
@@ -289,7 +289,7 @@ This architecture replaced the original multi-deployment approach (separate Verc
 - **Instant switching** — users toggle variants in the header bar without a full page navigation or DNS lookup
 - **Shared CDN cache** — the static SPA assets are identical across variants; only runtime configuration differs. CDN cache hit rates are 4× higher than with separate deployments
 - **Single CI pipeline** — one build, one deployment, one set of edge functions. No cross-deployment configuration drift
-- **Social bot routing** — the OG image endpoint generates variant-specific preview cards based on the requesting hostname, so sharing a Tech Monitor link produces tech-branded social previews
+- **Social bot routing** — the OG image endpoint generates variant-specific preview cards based on the requesting hostname, so sharing a SentinelIQ Tech link produces tech-branded social previews
 
 ---
 

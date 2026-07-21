@@ -57,10 +57,10 @@
 | Variant             | URL                                                          | Focus                                            |
 | ------------------- | ------------------------------------------------------------ | ------------------------------------------------ |
 | **SentinelIQ**   | [worldmonitor.app](https://worldmonitor.app)                 | Geopolitics, military, conflicts, infrastructure |
-| **Tech Monitor**    | [tech.worldmonitor.app](https://tech.worldmonitor.app)       | Startups, AI/ML, cloud, cybersecurity            |
-| **Finance Monitor** | [finance.worldmonitor.app](https://finance.worldmonitor.app) | Global markets, trading, central banks, Gulf FDI |
-| **Commodity Monitor** | [commodity.worldmonitor.app](https://commodity.worldmonitor.app) | Mining, metals, energy commodities, critical minerals |
-| **Happy Monitor**   | [happy.worldmonitor.app](https://happy.worldmonitor.app)     | Good news, positive trends, uplifting stories    |
+| **SentinelIQ Tech**    | [tech.worldmonitor.app](https://tech.worldmonitor.app)       | Startups, AI/ML, cloud, cybersecurity            |
+| **SentinelIQ Finance** | [finance.worldmonitor.app](https://finance.worldmonitor.app) | Global markets, trading, central banks, Gulf FDI |
+| **SentinelIQ Commodity** | [commodity.worldmonitor.app](https://commodity.worldmonitor.app) | Mining, metals, energy commodities, critical minerals |
+| **SentinelIQ Happy**   | [happy.worldmonitor.app](https://happy.worldmonitor.app)     | Good news, positive trends, uplifting stories    |
 
 All five variants run from a single codebase — switch between them with one click via the header bar.
 
@@ -221,14 +221,14 @@ All five variants run from a single codebase — switch between them with one cl
 
 A single codebase produces five specialized dashboards, each with distinct feeds, panels, map layers, and branding:
 
-| Aspect                | SentinelIQ                                        | Tech Monitor                                    | Finance Monitor                                  | Commodity Monitor                                         | Happy Monitor                                         |
+| Aspect                | SentinelIQ                                        | SentinelIQ Tech                                    | SentinelIQ Finance                                  | SentinelIQ Commodity                                         | SentinelIQ Happy                                         |
 | --------------------- | ---------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------ | --------------------------------------------------------- | ----------------------------------------------------- |
 | **Domain**            | worldmonitor.app                                     | tech.worldmonitor.app                           | finance.worldmonitor.app                         | commodity.worldmonitor.app                                | happy.worldmonitor.app                                |
 | **Focus**             | Geopolitics, military, conflicts                     | AI/ML, startups, cybersecurity                  | Markets, trading, central banks                  | Mining, metals, energy commodities, critical minerals     | Good news, conservation, human progress               |
 | **RSS Feeds**         | 15 categories, 200+ feeds (politics, MENA, Africa, think tanks) | 21 categories, 152 feeds (AI, VC blogs, startups, GitHub) | 14 categories, 55 feeds (forex, bonds, commodities, IPOs) | 10 categories, 50+ feeds (gold/silver, energy, mining, critical minerals, base metals) | 5 categories, 21 positive-news sources (GNN, Positive.News, Upworthy) |
 | **Panels**            | 45 (strategic posture, CII, cascade, trade policy, airline intel, predictions) | 28 (AI labs, unicorns, accelerators, tech readiness) | 27 (forex, bonds, derivatives, trade policy, gulf economies) | 16 (live prices, sector heatmap, gold/silver, energy, mining, critical minerals, base metals, supply chain) | 10 (good news, breakthroughs, conservation, renewables, giving) |
 | **Unique Map Layers** | Military bases, nuclear facilities, hotspots         | Tech HQs, cloud regions, startup hubs           | Stock exchanges, central banks, Gulf investments | Mine sites, processing plants, commodity ports, commodity hubs, pipelines, trade routes | Positive events, kindness, species recovery, renewables |
-| **Desktop App**       | SentinelIQ.app / .exe / .AppImage                 | Tech Monitor.app / .exe / .AppImage             | Finance Monitor.app / .exe / .AppImage           | (web-only)                                                | (web-only)                                            |
+| **Desktop App**       | SentinelIQ.app / .exe / .AppImage                 | SentinelIQ Tech.app / .exe / .AppImage             | SentinelIQ Finance.app / .exe / .AppImage           | (web-only)                                                | (web-only)                                            |
 
 Single-deployment consolidation — all five variants serve from one Vercel deployment, determined by hostname. Build-time `VITE_VARIANT` tree-shakes unused data. Runtime variant selector in the header bar.
 
@@ -500,11 +500,11 @@ npm run typecheck    # TypeScript type checking (tsc --noEmit)
 
 # Desktop packaging
 npm run desktop:package:macos:full      # .app + .dmg (SentinelIQ)
-npm run desktop:package:macos:tech      # .app + .dmg (Tech Monitor)
-npm run desktop:package:macos:finance   # .app + .dmg (Finance Monitor)
+npm run desktop:package:macos:tech      # .app + .dmg (SentinelIQ Tech)
+npm run desktop:package:macos:finance   # .app + .dmg (SentinelIQ Finance)
 npm run desktop:package:windows:full    # .exe + .msi (SentinelIQ)
-npm run desktop:package:windows:tech    # .exe + .msi (Tech Monitor)
-npm run desktop:package:windows:finance # .exe + .msi (Finance Monitor)
+npm run desktop:package:windows:tech    # .exe + .msi (SentinelIQ Tech)
+npm run desktop:package:windows:finance # .exe + .msi (SentinelIQ Finance)
 
 # Generic packaging runner
 npm run desktop:package -- --os macos --variant full

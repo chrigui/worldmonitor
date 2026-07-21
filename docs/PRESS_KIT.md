@@ -23,10 +23,10 @@ SentinelIQ runs five thematic variants from a single codebase, each tailored to 
 | Variant | Domain | Focus |
 |---------|--------|-------|
 | **SentinelIQ** | worldmonitor.app | Geopolitics, military, conflicts, infrastructure |
-| **Tech Monitor** | tech.worldmonitor.app | AI/ML, startups, cybersecurity, tech ecosystems |
-| **Finance Monitor** | finance.worldmonitor.app | Markets, central banks, Gulf FDI, commodities |
-| **Commodity Monitor** | commodity.worldmonitor.app | Mining, metals, energy, critical minerals |
-| **Happy Monitor** | happy.worldmonitor.app | Good news, conservation, positive global trends |
+| **SentinelIQ Tech** | tech.worldmonitor.app | AI/ML, startups, cybersecurity, tech ecosystems |
+| **SentinelIQ Finance** | finance.worldmonitor.app | Markets, central banks, Gulf FDI, commodities |
+| **SentinelIQ Commodity** | commodity.worldmonitor.app | Mining, metals, energy, critical minerals |
+| **SentinelIQ Happy** | happy.worldmonitor.app | Good news, conservation, positive global trends |
 
 ### AI Intelligence Layer
 

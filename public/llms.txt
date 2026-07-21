@@ -11,8 +11,8 @@ The project is built with TypeScript, Vite, MapLibre GL JS, deck.gl, D3.js, and 
 ## Live Instances
 
 - [SentinelIQ](https://worldmonitor.app): Geopolitics, military, conflicts, infrastructure
-- [Tech Monitor](https://tech.worldmonitor.app): Startups, AI/ML, cloud, cybersecurity
-- [Finance Monitor](https://finance.worldmonitor.app): Global markets, trading, central banks, Gulf FDI
+- [SentinelIQ Tech](https://tech.worldmonitor.app): Startups, AI/ML, cloud, cybersecurity
+- [SentinelIQ Finance](https://finance.worldmonitor.app): Global markets, trading, central banks, Gulf FDI
 - [SentinelIQ Pro](https://worldmonitor.app/pro): AI-powered equity research, geopolitical analysis, macro intelligence
 - [Blog](https://www.worldmonitor.app/blog/): Analysis, OSINT guides, geopolitics, and market intelligence articles
 

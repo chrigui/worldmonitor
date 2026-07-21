@@ -1,18 +1,18 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Tech Monitor",
+  "productName": "SentinelIQ Tech",
   "mainBinaryName": "tech-monitor",
   "identifier": "app.worldmonitor.tech.desktop",
   "app": {
     "windows": [
       {
-        "title": "Tech Monitor"
+        "title": "SentinelIQ Tech"
       }
     ]
   },
   "bundle": {
-    "shortDescription": "Tech Monitor desktop app",
-    "longDescription": "Tech Monitor desktop app for real-time AI and technology intelligence.",
+    "shortDescription": "SentinelIQ Tech desktop app",
+    "longDescription": "SentinelIQ Tech desktop app for real-time AI and technology intelligence.",
     "targets": [
       "app",
       "dmg",

@@ -35,13 +35,13 @@ This is the flagship. SentinelIQ is built for OSINT analysts, defense researcher
 
 **Who it's for:** OSINT researchers, geopolitical analysts, defense academics, journalists covering conflict, humanitarian organizations monitoring field conditions.
 
-## 2. Tech Monitor: The Silicon Valley Radar
+## 2. SentinelIQ Tech: The Silicon Valley Radar
 
 **URL:** tech.worldmonitor.app
 **Panels:** 28
 **Focus:** AI/ML, startups, cybersecurity, cloud infrastructure
 
-Tech Monitor maps the global technology landscape: where AI is being built, where startups are funded, where data centers are concentrated, and where the next unicorn might emerge.
+SentinelIQ Tech maps the global technology landscape: where AI is being built, where startups are funded, where data centers are concentrated, and where the next unicorn might emerge.
 
 **Key features:**
 
@@ -58,13 +58,13 @@ Tech Monitor maps the global technology landscape: where AI is being built, wher
 
 **Who it's for:** VC investors evaluating markets, tech executives tracking competitors, developers following industry trends, cybersecurity professionals monitoring threats.
 
-## 3. Finance Monitor: Markets with Context
+## 3. SentinelIQ Finance: Markets with Context
 
 **URL:** finance.worldmonitor.app
 **Panels:** 27
 **Focus:** Markets, central banks, forex, Gulf FDI, macro signals
 
-Finance Monitor is for traders and analysts who know that markets move on geopolitics. It combines traditional financial data with the intelligence layers that drive price action.
+SentinelIQ Finance is for traders and analysts who know that markets move on geopolitics. It combines traditional financial data with the intelligence layers that drive price action.
 
 **Key features:**
 
@@ -82,13 +82,13 @@ Finance Monitor is for traders and analysts who know that markets move on geopol
 
 **Who it's for:** Retail and institutional traders, macro investors, financial analysts, emerging market researchers, fintech builders.
 
-## 4. Commodity Monitor: Raw Materials Intelligence
+## 4. SentinelIQ Commodity: Raw Materials Intelligence
 
 **URL:** commodity.worldmonitor.app
 **Panels:** 16
 **Focus:** Mining, metals, energy, supply chain disruption
 
-Commodity Monitor tracks the physical resources that power the global economy: where they're extracted, how they're priced, and what threatens their supply.
+SentinelIQ Commodity tracks the physical resources that power the global economy: where they're extracted, how they're priced, and what threatens their supply.
 
 **Key features:**
 
@@ -103,13 +103,13 @@ Commodity Monitor tracks the physical resources that power the global economy: w
 
 **Who it's for:** Commodity traders, supply chain managers, mining analysts, energy sector professionals, procurement teams, logistics planners.
 
-## 5. Happy Monitor: The Antidote to Doom Scrolling
+## 5. SentinelIQ Happy: The Antidote to Doom Scrolling
 
 **URL:** happy.worldmonitor.app
 **Panels:** 10
 **Focus:** Good news, human progress, conservation, renewable energy
 
-In a world of conflict feeds and crisis dashboards, Happy Monitor exists to track what's going right. It curates positive developments: scientific breakthroughs, conservation wins, renewable energy milestones, and human progress stories.
+In a world of conflict feeds and crisis dashboards, SentinelIQ Happy exists to track what's going right. It curates positive developments: scientific breakthroughs, conservation wins, renewable energy milestones, and human progress stories.
 
 **Key features:**
 
@@ -168,7 +168,7 @@ Install on any device from the browser. Includes offline map caching (500 tiles)
 
 In the web app, switch variants via the header navigation. Your preferences, language settings, and AI configuration carry across variants.
 
-The variants share a single codebase. Every improvement to the core engine benefits all five dashboards simultaneously. A map performance optimization for SentinelIQ automatically makes Commodity Monitor faster too.
+The variants share a single codebase. Every improvement to the core engine benefits all five dashboards simultaneously. A map performance optimization for SentinelIQ automatically makes SentinelIQ Commodity faster too.
 
 ## Why Five Variants Instead of One?
 

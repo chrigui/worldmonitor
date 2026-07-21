@@ -20,19 +20,19 @@ const VARIANT_HOST_MAP: Record<string, string> = {
 // Source of truth: src/config/variant-meta.ts — keep in sync when variant metadata changes.
 const VARIANT_OG: Record<string, { title: string; description: string; image: string; url: string }> = {
   tech: {
-    title: 'Tech Monitor - Real-Time AI & Tech Industry Dashboard',
+    title: 'SentinelIQ Tech - Real-Time AI & Tech Industry Dashboard',
     description: 'Real-time AI and tech industry dashboard tracking tech giants, AI labs, startup ecosystems, funding rounds, and tech events worldwide.',
     image: 'https://tech.worldmonitor.app/favico/tech/og-image.png',
     url: 'https://tech.worldmonitor.app/',
   },
   finance: {
-    title: 'Finance Monitor - Real-Time Markets & Trading Dashboard',
+    title: 'SentinelIQ Finance - Real-Time Markets & Trading Dashboard',
     description: 'Real-time finance and trading dashboard tracking global markets, stock exchanges, central banks, commodities, forex, crypto, and economic indicators worldwide.',
     image: 'https://finance.worldmonitor.app/favico/finance/og-image.png',
     url: 'https://finance.worldmonitor.app/',
   },
   happy: {
-    title: 'Happy Monitor - Good News & Global Progress',
+    title: 'SentinelIQ Happy - Good News & Global Progress',
     description: 'Curated positive news, progress data, and uplifting stories from around the world.',
     image: 'https://happy.worldmonitor.app/favico/happy/og-image.png',
     url: 'https://happy.worldmonitor.app/',

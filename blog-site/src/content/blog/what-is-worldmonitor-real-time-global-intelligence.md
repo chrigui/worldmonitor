@@ -40,10 +40,10 @@ SentinelIQ isn't one dashboard. It's five:
 | Dashboard | Focus | URL |
 |-----------|-------|-----|
 | **SentinelIQ** | Geopolitics, conflicts, military, infrastructure | worldmonitor.app |
-| **Tech Monitor** | AI labs, startups, cybersecurity, cloud infrastructure | tech.worldmonitor.app |
-| **Finance Monitor** | Markets, central banks, forex, Gulf FDI | finance.worldmonitor.app |
-| **Commodity Monitor** | Mining, metals, energy, supply chain disruption | commodity.worldmonitor.app |
-| **Happy Monitor** | Good news, breakthroughs, conservation, renewable energy | happy.worldmonitor.app |
+| **SentinelIQ Tech** | AI labs, startups, cybersecurity, cloud infrastructure | tech.worldmonitor.app |
+| **SentinelIQ Finance** | Markets, central banks, forex, Gulf FDI | finance.worldmonitor.app |
+| **SentinelIQ Commodity** | Mining, metals, energy, supply chain disruption | commodity.worldmonitor.app |
+| **SentinelIQ Happy** | Good news, breakthroughs, conservation, renewable energy | happy.worldmonitor.app |
 
 Switch between them with a single click. Each variant curates panels and layers for its specific audience while sharing the same underlying intelligence engine.
 

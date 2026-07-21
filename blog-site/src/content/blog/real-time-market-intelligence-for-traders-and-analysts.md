@@ -12,7 +12,7 @@ Markets don't move in isolation. A drone strike in the Persian Gulf moves oil fu
 
 Traditional financial dashboards show you price. SentinelIQ shows you context.
 
-## Finance Monitor: Markets Meet Geopolitics
+## SentinelIQ Finance: Markets Meet Geopolitics
 
 SentinelIQ's Finance variant (finance.worldmonitor.app) combines traditional market data with the geopolitical intelligence that drives price action. It's built for traders who understand that a Reuters headline and a ship position can be more valuable than a moving average.
 
@@ -65,7 +65,7 @@ For commodity traders, SentinelIQ maps the **10 major commodity exchanges** (CME
 - Critical minerals (lithium, cobalt, rare earths)
 - Agricultural commodities
 
-The Commodity Monitor variant (commodity.worldmonitor.app) goes deeper with mining company locations, pipeline infrastructure, and supply chain disruption alerts.
+The SentinelIQ Commodity variant (commodity.worldmonitor.app) goes deeper with mining company locations, pipeline infrastructure, and supply chain disruption alerts.
 
 ## Crypto Intelligence
 
@@ -112,7 +112,7 @@ SentinelIQ maps the world's **19 major financial centers** ranked by the Global 
 
 **Morning Routine:**
 
-1. Open Finance Monitor
+1. Open SentinelIQ Finance
 2. Check macro radar verdict (BUY/CASH)
 3. Scan central bank tracker for overnight decisions
 4. Review hotspot escalation scores for geopolitical risk
@@ -139,4 +139,4 @@ The entire platform is open source under AGPL-3.0, meaning the algorithms behind
 
 ---
 
-**Open Finance Monitor at [finance.worldmonitor.app](https://finance.worldmonitor.app). Your geopolitical edge starts here.**
+**Open SentinelIQ Finance at [finance.worldmonitor.app](https://finance.worldmonitor.app). Your geopolitical edge starts here.**

@@ -1,18 +1,18 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Finance Monitor",
+  "productName": "SentinelIQ Finance",
   "mainBinaryName": "finance-monitor",
   "identifier": "app.worldmonitor.finance.desktop",
   "app": {
     "windows": [
       {
-        "title": "Finance Monitor"
+        "title": "SentinelIQ Finance"
       }
     ]
   },
   "bundle": {
-    "shortDescription": "Finance Monitor desktop app",
-    "longDescription": "Finance Monitor desktop app for real-time markets and trading intelligence.",
+    "shortDescription": "SentinelIQ Finance desktop app",
+    "longDescription": "SentinelIQ Finance desktop app for real-time markets and trading intelligence.",
     "targets": [
       "app",
       "dmg",

@@ -18,7 +18,7 @@ SentinelIQ runs two specialized variants from a single codebase, each optimized 
 | Variant | URL | Focus |
 |---------|-----|-------|
 | **🌍 SentinelIQ** | [worldmonitor.app](https://worldmonitor.app) | Geopolitical intelligence, military tracking, conflict monitoring, infrastructure security |
-| **💻 Tech Monitor** | [tech.worldmonitor.app](https://tech.worldmonitor.app) | Technology sector intelligence, AI/startup ecosystems, cloud infrastructure, tech events |
+| **💻 SentinelIQ Tech** | [tech.worldmonitor.app](https://tech.worldmonitor.app) | Technology sector intelligence, AI/startup ecosystems, cloud infrastructure, tech events |
 
 A compact **variant switcher** in the header allows seamless navigation between variants while preserving your map position and panel configuration.
 
@@ -54,7 +54,7 @@ The primary variant focuses on geopolitical intelligence, military tracking, and
 
 ---
 
-## Tech Monitor
+## SentinelIQ Tech
 
 The tech variant ([tech.worldmonitor.app](https://tech.worldmonitor.app)) provides specialized layers for technology sector monitoring.
 
@@ -3601,7 +3601,7 @@ Original dashboard concept inspired by Reggie James ([@HipCityReg](https://x.com
 
 Special thanks to **Yanal at [Wingbits](https://wingbits.com)** for providing API access for aircraft enrichment data, enabling military aircraft classification and ownership tracking
 
-Thanks to **[@fai9al](https://github.com/fai9al)** for the inspiration and original PR that led to the Tech Monitor variant
+Thanks to **[@fai9al](https://github.com/fai9al)** for the inspiration and original PR that led to the SentinelIQ Tech variant
 
 ---
 
@@ -3666,9 +3666,9 @@ See [ROADMAP.md](ROADMAP.md) for detailed planning. Recent intelligence enhancem
 - ✅ **Significant Protest Filtering** - Map shows only riots and high-severity protests
 - ✅ **Intelligence Findings Detail Modal** - Click any alert for full context and component breakdown
 - ✅ **Build-Time Version Sync** - Header version auto-syncs with package.json
-- ✅ **Tech Monitor Variant** - Dedicated technology sector dashboard with startup ecosystems, cloud regions, and tech events
+- ✅ **SentinelIQ Tech Variant** - Dedicated technology sector dashboard with startup ecosystems, cloud regions, and tech events
 - ✅ **Smart Marker Clustering** - Geographic grouping of nearby markers with click-to-expand popups
-- ✅ **Variant Switcher UI** - Compact orbital navigation between SentinelIQ and Tech Monitor
+- ✅ **Variant Switcher UI** - Compact orbital navigation between SentinelIQ and SentinelIQ Tech
 - ✅ **CII Learning Mode** - 15-minute calibration period with visual progress indicator
 - ✅ **Regional Tech Coverage** - Verified tech HQ data for MENA, Europe, Asia-Pacific hubs
 - ✅ **Service Status Panel** - External service health monitoring (AI providers, cloud platforms)

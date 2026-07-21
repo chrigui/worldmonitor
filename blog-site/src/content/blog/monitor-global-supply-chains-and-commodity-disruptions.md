@@ -1,6 +1,6 @@
 ---
 title: "Monitor Global Supply Chains and Commodity Disruptions in Real Time"
-description: "Track commodity prices, port disruptions, pipeline infrastructure, shipping routes, and supply chain risks on one free dashboard. SentinelIQ Commodity Monitor."
+description: "Track commodity prices, port disruptions, pipeline infrastructure, shipping routes, and supply chain risks on one free dashboard. SentinelIQ SentinelIQ Commodity."
 metaTitle: "Real-Time Supply Chain Monitoring Dashboard | Commodity Disruption Alerts | SentinelIQ"
 keywords: "supply chain monitoring tool, commodity price dashboard, supply chain disruption alerts, global shipping tracker, commodity risk monitoring"
 audience: "Supply chain managers, commodity traders, logistics professionals, procurement teams, risk analysts"
@@ -12,7 +12,7 @@ In March 2021, the Ever Given blocked the Suez Canal for six days. Global trade 
 
 The companies that recovered fastest were the ones that already had multi-source monitoring in place: ship positions, port congestion data, commodity prices, and alternative route analysis, all visible before the situation hit mainstream news.
 
-SentinelIQ's Commodity Monitor (commodity.worldmonitor.app) gives every supply chain team that capability.
+SentinelIQ's SentinelIQ Commodity (commodity.worldmonitor.app) gives every supply chain team that capability.
 
 ## The Supply Chain Visibility Gap
 
@@ -30,7 +30,7 @@ SentinelIQ fills that gap.
 
 ## Live Commodity Pricing
 
-The Commodity Monitor tracks real-time prices for:
+The SentinelIQ Commodity tracks real-time prices for:
 
 **Energy:**
 

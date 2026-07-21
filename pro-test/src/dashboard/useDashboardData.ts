@@ -97,6 +97,36 @@ export interface CopilotAnswer {
   confidence: number;
 }
 
+export type AssetType = 'supplier' | 'facility' | 'route' | 'product' | 'market' | 'other';
+export type Criticality = 'tier1' | 'tier2' | 'tier3';
+export interface AssetEntity { type: 'company' | 'country' | 'topic'; value: string }
+export interface AssetSummary {
+  id: string;
+  name: string;
+  type: AssetType;
+  criticality: Criticality;
+  revenueAtRisk: number;
+  entities: AssetEntity[];
+}
+export interface ImpactRow {
+  assetId: string;
+  name: string;
+  type: string;
+  criticality: Criticality;
+  impact: number;
+  direct: boolean;
+  via: string | null;
+  revenueAtRisk: number;
+  confidence: number;
+}
+export interface ImpactResult {
+  rows: ImpactRow[];
+  totalRevenueAtRisk: number;
+  directCount: number;
+  affectedCount: number;
+}
+interface AssetLink { fromAssetId: string; toAssetId: string; weight: number }
+
 export interface DashboardData {
   loading: boolean;
   /** True while backed by in-memory demo data (no Convex/auth wired yet). */
@@ -126,7 +156,86 @@ export interface DashboardData {
   runEvaluation: () => number;
   /** Ask the AI copilot a question, grounded in the org's intelligence. */
   askCopilot: (question: string) => Promise<CopilotAnswer>;
+  assets: AssetSummary[];
+  impact: ImpactResult;
+  createAsset: (name: string, type: AssetType, criticality: Criticality, revenueAtRisk: number, entityValue: string) => void;
+  removeAsset: (id: string) => void;
 }
+
+const SEVERITY_WEIGHT: Record<Severity, number> = { low: 0.25, medium: 0.5, high: 0.75, critical: 1 };
+
+// Local mirror of convex/lib/impact.ts computeImpact — kept in sync; the server
+// uses the authoritative version. Signals carry entity values in `topics`.
+function computeImpactLocal(
+  assets: AssetSummary[],
+  edges: AssetLink[],
+  signals: Array<{ severity: Severity; title: string; topics: string[] }>,
+): ImpactResult {
+  const impact = new Map<string, number>();
+  const direct = new Map<string, boolean>();
+  const via = new Map<string, string | null>();
+  const byId = new Map(assets.map((a) => [a.id, a]));
+  const norm = (s: string) => s.trim().toLowerCase();
+
+  for (const a of assets) {
+    let d = 0;
+    for (const s of signals) {
+      const hay = new Set(s.topics.map(norm));
+      const title = norm(s.title);
+      const hit = a.entities.some((e) => hay.has(norm(e.value)) || (e.type === 'topic' && title.includes(norm(e.value))));
+      if (hit) d = Math.max(d, SEVERITY_WEIGHT[s.severity]);
+    }
+    impact.set(a.id, d); direct.set(a.id, d > 0); via.set(a.id, null);
+  }
+  for (let p = 0; p < Math.min(assets.length, 8); p++) {
+    let changed = false;
+    for (const e of edges) {
+      const from = impact.get(e.fromAssetId) ?? 0;
+      if (from === 0) continue;
+      const cand = from * Math.max(0, Math.min(1, e.weight));
+      if (cand > (impact.get(e.toAssetId) ?? 0) + 1e-9) {
+        impact.set(e.toAssetId, cand);
+        if (!direct.get(e.toAssetId)) via.set(e.toAssetId, byId.get(e.fromAssetId)?.name ?? null);
+        changed = true;
+      }
+    }
+    if (!changed) break;
+  }
+  const rows: ImpactRow[] = [];
+  let totalRevenueAtRisk = 0, directCount = 0;
+  for (const a of assets) {
+    const imp = impact.get(a.id) ?? 0;
+    if (imp <= 0) continue;
+    const isDirect = direct.get(a.id) ?? false;
+    const rev = Math.round((a.revenueAtRisk ?? 0) * imp);
+    totalRevenueAtRisk += rev;
+    if (isDirect) directCount++;
+    rows.push({ assetId: a.id, name: a.name, type: a.type, criticality: a.criticality, impact: imp, direct: isDirect, via: via.get(a.id) ?? null, revenueAtRisk: rev, confidence: isDirect ? 0.85 : Math.max(0.3, 0.6 * imp) });
+  }
+  rows.sort((x, y) => y.impact - x.impact || y.revenueAtRisk - x.revenueAtRisk);
+  return { rows, totalRevenueAtRisk, directCount, affectedCount: rows.length };
+}
+
+const DEMO_ASSETS: Record<string, AssetSummary[]> = {
+  org_meridian: [
+    { id: 'as_tsmc', name: 'TSMC (Taiwan fab)', type: 'supplier', criticality: 'tier1', revenueAtRisk: 1200, entities: [{ type: 'company', value: 'TSM' }] },
+    { id: 'as_asml', name: 'ASML', type: 'supplier', criticality: 'tier2', revenueAtRisk: 600, entities: [{ type: 'company', value: 'ASML' }] },
+    { id: 'as_fab', name: 'Chip Assembly Line', type: 'product', criticality: 'tier1', revenueAtRisk: 3000, entities: [] },
+    { id: 'as_redsea', name: 'Red Sea Freight Route', type: 'route', criticality: 'tier1', revenueAtRisk: 900, entities: [{ type: 'country', value: 'YE' }, { type: 'country', value: 'EG' }] },
+    { id: 'as_energy', name: 'Energy Procurement', type: 'market', criticality: 'tier2', revenueAtRisk: 800, entities: [{ type: 'country', value: 'RU' }, { type: 'topic', value: 'sanctions' }] },
+  ],
+  org_northwind: [
+    { id: 'as_port', name: 'Shanghai Port Ops', type: 'route', criticality: 'tier1', revenueAtRisk: 500, entities: [{ type: 'country', value: 'CN' }] },
+  ],
+};
+const DEMO_LINKS: Record<string, AssetLink[]> = {
+  org_meridian: [
+    { fromAssetId: 'as_tsmc', toAssetId: 'as_fab', weight: 0.8 },
+    { fromAssetId: 'as_asml', toAssetId: 'as_fab', weight: 0.6 },
+    { fromAssetId: 'as_redsea', toAssetId: 'as_fab', weight: 0.4 },
+  ],
+  org_northwind: [],
+};
 
 const now = Date.now();
 const mins = (n: number) => now - n * 60_000;
@@ -263,6 +372,7 @@ export function useDashboardData(): DashboardData {
   const [alertsByOrg, setAlertsByOrg] = useState<Record<string, AlertDef[]>>(DEMO_ALERTS);
   const [eventsByOrg, setEventsByOrg] = useState<Record<string, AlertEvent[]>>(DEMO_ALERT_EVENTS);
   const [targetsByOrg, setTargetsByOrg] = useState<Record<string, NotificationTarget[]>>(DEMO_TARGETS);
+  const [assetsByOrg, setAssetsByOrg] = useState<Record<string, AssetSummary[]>>(DEMO_ASSETS);
 
   const orgId = selectedOrgId;
   const selectedOrg = useMemo(() => orgs.find((o) => o.id === orgId) ?? null, [orgs, orgId]);
@@ -374,6 +484,27 @@ export function useDashboardData(): DashboardData {
     return created.length;
   }, [orgId, alertsByOrg, watchlistsByOrg, logActivity]);
 
+  const assets = orgId ? assetsByOrg[orgId] ?? [] : [];
+  const impact = useMemo<ImpactResult>(() => {
+    if (!orgId) return { rows: [], totalRevenueAtRisk: 0, directCount: 0, affectedCount: 0 };
+    const evs = eventsByOrg[orgId] ?? [];
+    const signals = evs.map((e) => ({ severity: e.severity, title: e.title, topics: e.matched }));
+    return computeImpactLocal(assetsByOrg[orgId] ?? [], DEMO_LINKS[orgId] ?? [], signals);
+  }, [orgId, assetsByOrg, eventsByOrg]);
+
+  const createAsset = useCallback((name: string, type: AssetType, criticality: Criticality, revenueAtRisk: number, entityValue: string) => {
+    if (!orgId || !name.trim()) return;
+    const entities: AssetEntity[] = entityValue.trim() ? [{ type: 'company', value: entityValue.trim() }] : [];
+    const a: AssetSummary = { id: nextId('as'), name: name.trim(), type, criticality, revenueAtRisk: revenueAtRisk || 0, entities };
+    setAssetsByOrg((prev) => ({ ...prev, [orgId]: [a, ...(prev[orgId] ?? [])] }));
+    logActivity(orgId, `asset.create — ${a.name}`);
+  }, [orgId, logActivity]);
+
+  const removeAsset = useCallback((id: string) => {
+    if (!orgId) return;
+    setAssetsByOrg((prev) => ({ ...prev, [orgId]: (prev[orgId] ?? []).filter((a) => a.id !== id) }));
+  }, [orgId]);
+
   const askCopilot = useCallback(async (question: string): Promise<CopilotAnswer> => {
     // Local retrieval over demo evidence (alert events + watchlists). This mirrors
     // the server RAG shape; live mode calls the Convex `copilot.ask` action instead.
@@ -439,5 +570,9 @@ export function useDashboardData(): DashboardData {
     removeTarget,
     runEvaluation,
     askCopilot,
+    assets,
+    impact,
+    createAsset,
+    removeAsset,
   };
 }

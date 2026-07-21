@@ -184,6 +184,43 @@ export default defineSchema({
     deletedAt: v.optional(v.number()),
   }).index("by_org", ["orgId"]),
 
+  // Business-impact asset graph: nodes (assets) + directed dependency edges.
+  assets: defineTable({
+    orgId: v.id("organizations"),
+    name: v.string(),
+    type: v.union(
+      v.literal("supplier"),
+      v.literal("facility"),
+      v.literal("route"),
+      v.literal("product"),
+      v.literal("market"),
+      v.literal("other"),
+    ),
+    criticality: v.union(v.literal("tier1"), v.literal("tier2"), v.literal("tier3")),
+    revenueAtRisk: v.optional(v.number()), // annualized $ exposure if fully disrupted
+    country: v.optional(v.string()),
+    // Entities this asset is exposed to; a signal matching these hits the asset.
+    entities: v.array(
+      v.object({
+        type: v.union(v.literal("company"), v.literal("country"), v.literal("topic")),
+        value: v.string(),
+      }),
+    ),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  }).index("by_org", ["orgId"]),
+
+  // Directed edge: `toAsset` depends on `fromAsset`; impact propagates from → to.
+  assetLinks: defineTable({
+    orgId: v.id("organizations"),
+    fromAssetId: v.id("assets"),
+    toAssetId: v.id("assets"),
+    weight: v.number(), // 0..1 impact transmission
+    createdAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  }).index("by_org", ["orgId"]),
+
   // AI Copilot conversation threads + messages (RAG over the org's intelligence).
   copilotThreads: defineTable({
     orgId: v.id("organizations"),

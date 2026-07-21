@@ -4,12 +4,24 @@ import {
   LayoutDashboard, Users, ListChecks, Bell, Activity, Plus, Trash2,
   ChevronDown, ArrowLeft, ShieldCheck, Building2, Mail, Globe2, Building, Hash,
   Zap, Check, PlayCircle, Send, Slack, Webhook, Sparkles, Loader2, ExternalLink,
+  Network, TrendingDown,
 } from 'lucide-react';
 import {
   useDashboardData, type Role, type WatchlistKind, type Watchlist, type OrgSummary,
   type Severity, type Channel, type DashboardData, type TargetType,
-  type CopilotAnswer, type CopilotCitation,
+  type CopilotAnswer, type CopilotCitation, type AssetType, type Criticality, type ImpactResult, type AssetSummary,
 } from './useDashboardData';
+
+const TIER_STYLES: Record<Criticality, string> = {
+  tier1: 'text-red-400 border-red-500/40 bg-red-500/10',
+  tier2: 'text-amber-300 border-amber-400/40 bg-amber-400/10',
+  tier3: 'text-wm-muted border-wm-border bg-white/5',
+};
+
+function money(n: number): string {
+  if (n >= 1000) return `$${(n / 1000).toFixed(1)}M`;
+  return `$${n}K`;
+}
 
 const TARGET_ICON: Record<TargetType, typeof Send> = {
   slack: Slack, webhook: Webhook, email: Mail,
@@ -224,6 +236,105 @@ function Copilot({ ask }: { ask: (q: string) => Promise<CopilotAnswer> }) {
   );
 }
 
+function BusinessImpact({ impact, assets, onCreate, onRemove }: {
+  impact: ImpactResult;
+  assets: AssetSummary[];
+  onCreate: (name: string, type: AssetType, criticality: Criticality, revenue: number, entity: string) => void;
+  onRemove: (id: string) => void;
+}) {
+  const [name, setName] = useState('');
+  const [type, setType] = useState<AssetType>('supplier');
+  const [tier, setTier] = useState<Criticality>('tier1');
+  const [revenue, setRevenue] = useState('');
+  const [entity, setEntity] = useState('');
+  const maxImpact = Math.max(0.01, ...impact.rows.map((r) => r.impact));
+
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <Network size={16} className="text-wm-green" />
+          <h2 className="font-display font-bold">Business Impact</h2>
+        </div>
+        <div className="flex items-center gap-2 text-sm">
+          <TrendingDown size={15} className="text-red-400" />
+          <span className="text-wm-muted">Revenue at risk</span>
+          <span className="font-display font-bold text-red-400 text-glow">{money(impact.totalRevenueAtRisk)}</span>
+          <span className="text-[11px] text-wm-muted">· {impact.directCount} direct / {impact.affectedCount} affected</span>
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Impact cascade */}
+        <div className="lg:col-span-2 glass-panel divide-y divide-wm-border">
+          {impact.rows.map((r) => (
+            <div key={r.assetId} className="p-3 flex items-center gap-3">
+              <div className="flex flex-col gap-1 min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className={`text-[10px] font-mono uppercase border rounded px-1.5 py-0.5 ${TIER_STYLES[r.criticality]}`}>{r.criticality}</span>
+                  <span className="text-sm text-wm-text truncate">{r.name}</span>
+                  <span className="text-[10px] font-mono text-wm-muted">{r.type}</span>
+                  {r.direct
+                    ? <span className="text-[10px] font-mono text-red-400 border border-red-500/30 rounded px-1.5 py-0.5">DIRECT</span>
+                    : <span className="text-[10px] font-mono text-amber-300 border border-amber-400/30 rounded px-1.5 py-0.5">via {r.via}</span>}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 flex-1 max-w-[220px] bg-white/10 rounded overflow-hidden">
+                    <span className="block h-full bg-gradient-to-r from-amber-400 to-red-500" style={{ width: `${(r.impact / maxImpact) * 100}%` }} />
+                  </span>
+                  <span className="text-[11px] font-mono text-wm-muted">{(r.impact * 100).toFixed(0)}% · conf {(r.confidence * 100).toFixed(0)}%</span>
+                </div>
+              </div>
+              <span className="text-sm font-display font-bold text-red-400 shrink-0">{money(r.revenueAtRisk)}</span>
+            </div>
+          ))}
+          {impact.rows.length === 0 && (
+            <div className="p-6 text-sm text-wm-muted text-center">No impact detected. Add assets mapped to your watchlist entities, then run the alert evaluation engine.</div>
+          )}
+        </div>
+
+        {/* Asset registry */}
+        <div className="flex flex-col gap-2">
+          <span className="text-[11px] uppercase tracking-wider text-wm-muted font-mono">Asset registry</span>
+          <form
+            onSubmit={(e) => { e.preventDefault(); onCreate(name, type, tier, Number(revenue) || 0, entity); setName(''); setRevenue(''); setEntity(''); }}
+            className="flex flex-col gap-2 glass-panel p-3"
+          >
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Asset name…" className="bg-black/30 border border-wm-border rounded px-2 py-1.5 text-sm focus:outline-none focus:border-wm-green/50" />
+            <div className="flex gap-2">
+              <select value={type} onChange={(e) => setType(e.target.value as AssetType)} className="flex-1 bg-black/30 border border-wm-border rounded px-1.5 py-1.5 text-xs focus:outline-none">
+                {(['supplier', 'facility', 'route', 'product', 'market', 'other'] as AssetType[]).map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+              <select value={tier} onChange={(e) => setTier(e.target.value as Criticality)} className="bg-black/30 border border-wm-border rounded px-1.5 py-1.5 text-xs focus:outline-none">
+                <option value="tier1">tier1</option><option value="tier2">tier2</option><option value="tier3">tier3</option>
+              </select>
+            </div>
+            <div className="flex gap-2">
+              <input value={revenue} onChange={(e) => setRevenue(e.target.value)} placeholder="$K at risk" inputMode="numeric" className="flex-1 min-w-0 bg-black/30 border border-wm-border rounded px-2 py-1.5 text-xs focus:outline-none" />
+              <input value={entity} onChange={(e) => setEntity(e.target.value)} placeholder="entity (e.g. TSM)" className="flex-1 min-w-0 bg-black/30 border border-wm-border rounded px-2 py-1.5 text-xs focus:outline-none" />
+            </div>
+            <button type="submit" className="flex items-center justify-center gap-1 bg-wm-green/10 border border-wm-green/40 text-wm-green rounded px-3 py-1.5 text-sm hover:bg-wm-green/20 transition-colors">
+              <Plus size={14} /> Add asset
+            </button>
+          </form>
+          <div className="glass-panel divide-y divide-wm-border max-h-52 overflow-y-auto">
+            {assets.map((a) => (
+              <div key={a.id} className="p-2.5 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className={`text-[9px] font-mono uppercase border rounded px-1 py-0.5 ${TIER_STYLES[a.criticality]}`}>{a.criticality}</span>
+                  <span className="text-xs truncate">{a.name}</span>
+                </div>
+                <button onClick={() => onRemove(a.id)} className="text-wm-muted hover:text-red-400 shrink-0" aria-label="Remove asset"><Trash2 size={13} /></button>
+              </div>
+            ))}
+            {assets.length === 0 && <div className="p-3 text-xs text-wm-muted">No assets yet.</div>}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function DashboardView({ data }: { data?: DashboardData }) {
   const demoData = useDashboardData();
   const d = data ?? demoData;
@@ -276,6 +387,8 @@ export function DashboardView({ data }: { data?: DashboardData }) {
         </div>
 
         <Copilot ask={d.askCopilot} />
+
+        <BusinessImpact impact={d.impact} assets={d.assets} onCreate={d.createAsset} onRemove={d.removeAsset} />
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Watchlists */}

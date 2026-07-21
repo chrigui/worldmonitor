@@ -193,8 +193,8 @@ const DEMO_ALERT_EVENTS: Record<string, AlertEvent[]> = {
   org_northwind: [],
 };
 
-// Sample signals used by the "Run evaluation" demo button.
-const SAMPLE_SIGNALS: Array<{ severity: Severity; title: string; source: string; countries?: string[]; companies?: string[]; topics?: string[] }> = [
+// Sample signals used by the "Run evaluation" button (demo + live).
+export const SAMPLE_SIGNALS: Array<{ severity: Severity; title: string; source: string; countries?: string[]; companies?: string[]; topics?: string[] }> = [
   { severity: 'critical', title: 'New sanctions package targets Russian energy exports', source: 'AP', countries: ['RU'], topics: ['sanctions'] },
   { severity: 'high', title: 'ASML export license under review', source: 'FT', companies: ['ASML'] },
   { severity: 'medium', title: 'Suez transit volumes down 12% w/w', source: 'Lloyd’s List', countries: ['EG'] },

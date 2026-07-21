@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { motion } from 'motion/react';
 import {
   LayoutDashboard, Users, ListChecks, Bell, Activity, Plus, Trash2,
@@ -7,8 +7,11 @@ import {
 } from 'lucide-react';
 import {
   useDashboardData, type Role, type WatchlistKind, type Watchlist, type OrgSummary,
-  type Severity, type Channel,
+  type Severity, type Channel, type DashboardData,
 } from './useDashboardData';
+import { LIVE_MODE } from './live/convexClient';
+
+const LiveDashboard = lazy(() => import('./live/LiveDashboard'));
 
 const SEVERITY_STYLES: Record<Severity, string> = {
   low: 'text-wm-muted border-wm-border bg-white/5',
@@ -130,8 +133,9 @@ function WatchlistCard({ wl, onRemove }: { wl: Watchlist; onRemove: (id: string)
   );
 }
 
-export default function Dashboard() {
-  const d = useDashboardData();
+export function DashboardView({ data }: { data?: DashboardData }) {
+  const demoData = useDashboardData();
+  const d = data ?? demoData;
   const [wlName, setWlName] = useState('');
   const [wlKind, setWlKind] = useState<WatchlistKind>('company');
   const [inviteEmail, setInviteEmail] = useState('');
@@ -247,7 +251,7 @@ export default function Dashboard() {
             <button
               onClick={() => {
                 const n = d.runEvaluation();
-                setEvalMsg(n > 0 ? `Engine fired ${n} event${n === 1 ? '' : 's'}` : 'No signals matched');
+                setEvalMsg(!d.demo ? 'Evaluation triggered' : n > 0 ? `Engine fired ${n} event${n === 1 ? '' : 's'}` : 'No signals matched');
                 window.setTimeout(() => setEvalMsg(null), 4000);
               }}
               className="flex items-center gap-1.5 text-xs font-mono border border-wm-border rounded px-3 py-1.5 text-wm-muted hover:text-wm-green hover:border-wm-green/40 transition-colors"
@@ -441,4 +445,20 @@ export default function Dashboard() {
       </main>
     </div>
   );
+}
+
+/**
+ * Dashboard entry point. Renders the live, Convex-backed dashboard when
+ * VITE_CONVEX_URL + VITE_CLERK_PUBLISHABLE_KEY are configured, otherwise the
+ * fully-interactive demo. Both render the same DashboardView.
+ */
+export default function Dashboard() {
+  if (LIVE_MODE) {
+    return (
+      <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-wm-muted text-sm">Loading…</div>}>
+        <LiveDashboard />
+      </Suspense>
+    );
+  }
+  return <DashboardView />;
 }

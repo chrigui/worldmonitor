@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, lazy, Suspense, Fragment, type ReactElement } from 'react';
 import { motion } from 'motion/react';
 import {
   LayoutDashboard, Users, ListChecks, Bell, Activity, Plus, Trash2,
@@ -95,7 +95,7 @@ function OrgSwitcher({ orgs, selectedOrg, onSelect }: {
   );
 }
 
-function WatchlistCard({ wl, onRemove }: { wl: Watchlist; onRemove: (id: string) => void }) {
+function WatchlistCard({ wl, onRemove }: { wl: Watchlist; onRemove: (id: string) => void }): ReactElement {
   const Icon = KIND_ICON[wl.kind];
   return (
     <motion.div
@@ -215,7 +215,7 @@ export function DashboardView({ data }: { data?: DashboardData }) {
             </form>
             <div className="grid sm:grid-cols-2 gap-3">
               {d.watchlists.map((wl) => (
-                <WatchlistCard key={wl.id} wl={wl} onRemove={d.removeWatchlist} />
+                <Fragment key={wl.id}><WatchlistCard wl={wl} onRemove={d.removeWatchlist} /></Fragment>
               ))}
               {d.watchlists.length === 0 && (
                 <div className="text-sm text-wm-muted glass-panel p-6 text-center sm:col-span-2">No watchlists yet — create one above.</div>

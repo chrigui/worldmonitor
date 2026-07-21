@@ -6,7 +6,7 @@ import { LayoutDashboard } from 'lucide-react';
 import { DashboardView } from '../Dashboard';
 import type {
   DashboardData, OrgSummary, Member, PendingInvite, Watchlist, ActivityEntry,
-  AlertDef, AlertEvent, NotificationTarget, CopilotAnswer, AssetSummary, ImpactResult,
+  AlertDef, AlertEvent, NotificationTarget, CopilotAnswer, AssetSummary, ImpactResult, ReportMeta,
   WatchlistKind, Role, Severity, Channel, TargetType, AssetType, Criticality,
 } from '../useDashboardData';
 import { SAMPLE_SIGNALS } from '../useDashboardData';
@@ -44,6 +44,7 @@ function LiveDashboardInner() {
   const activity = (useQuery(api.auditLogs.listForOrg, orgArg) as ActivityEntry[] | undefined) ?? [];
   const assets = (useQuery(api.assets.list, orgArg) as AssetSummary[] | undefined) ?? [];
   const impact = (useQuery(api.assets.assess, orgArg) as ImpactResult | undefined) ?? { rows: [], totalRevenueAtRisk: 0, directCount: 0, affectedCount: 0 };
+  const reports = (useQuery(api.reports.list, orgArg) as ReportMeta[] | undefined) ?? [];
 
   const createWL = useMutation(api.watchlists.create);
   const removeWL = useMutation(api.watchlists.remove);
@@ -60,6 +61,7 @@ function LiveDashboardInner() {
   const copilotThread = useRef<string | null>(null);
   const createAssetM = useMutation(api.assets.create);
   const removeAssetM = useMutation(api.assets.remove);
+  const generateReportAction = useAction(api.reportsNode.generate);
 
   const d: DashboardData = {
     loading: orgsRaw === undefined,
@@ -101,6 +103,12 @@ function LiveDashboardInner() {
       void createAssetM({ orgId, name, type, criticality, revenueAtRisk, entities });
     },
     removeAsset: (id: string) => { void removeAssetM({ assetId: id }); },
+    reports,
+    generateReport: async (): Promise<{ title: string; html: string }> => {
+      if (!orgId) return { title: 'Report', html: '<p>Select an organization.</p>' };
+      const r = await generateReportAction({ orgId, days: 7 }) as { reportId: string; title: string; html: string };
+      return { title: r.title, html: r.html };
+    },
   };
 
   if (orgsRaw !== undefined && orgs.length === 0) {

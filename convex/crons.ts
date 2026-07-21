@@ -12,4 +12,12 @@ crons.interval(
   {},
 );
 
+// Weekly executive brief for every active org (Mondays 08:00 UTC).
+crons.weekly(
+  "sentineliq weekly executive brief",
+  { dayOfWeek: "monday", hourUTC: 8, minuteUTC: 0 },
+  internal.reportsNode.scheduledReports,
+  {},
+);
+
 export default crons;

@@ -4,12 +4,13 @@ import {
   LayoutDashboard, Users, ListChecks, Bell, Activity, Plus, Trash2,
   ChevronDown, ArrowLeft, ShieldCheck, Building2, Mail, Globe2, Building, Hash,
   Zap, Check, PlayCircle, Send, Slack, Webhook, Sparkles, Loader2, ExternalLink,
-  Network, TrendingDown,
+  Network, TrendingDown, FileText, Download,
 } from 'lucide-react';
 import {
   useDashboardData, type Role, type WatchlistKind, type Watchlist, type OrgSummary,
   type Severity, type Channel, type DashboardData, type TargetType,
   type CopilotAnswer, type CopilotCitation, type AssetType, type Criticality, type ImpactResult, type AssetSummary,
+  type ReportMeta,
 } from './useDashboardData';
 
 const TIER_STYLES: Record<Criticality, string> = {
@@ -335,6 +336,49 @@ function BusinessImpact({ impact, assets, onCreate, onRemove }: {
   );
 }
 
+function openReportHtml(html: string) {
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank', 'noopener');
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
+
+function Reports({ reports, onGenerate }: { reports: ReportMeta[]; onGenerate: () => Promise<{ title: string; html: string }> }) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <FileText size={16} className="text-wm-green" />
+          <h2 className="font-display font-bold">Executive Reports</h2>
+        </div>
+        <button
+          onClick={async () => { setBusy(true); try { const r = await onGenerate(); openReportHtml(r.html); } finally { setBusy(false); } }}
+          disabled={busy}
+          className="flex items-center gap-1.5 bg-wm-green/10 border border-wm-green/40 text-wm-green rounded px-3 py-1.5 text-sm hover:bg-wm-green/20 transition-colors disabled:opacity-40"
+        >
+          {busy ? <Loader2 size={14} className="animate-spin" /> : <FileText size={14} />} Generate brief
+        </button>
+      </div>
+      <div className="glass-panel divide-y divide-wm-border">
+        {reports.map((r) => (
+          <div key={r.id} className="p-3 flex items-center justify-between gap-3">
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm text-wm-text truncate">{r.title}</span>
+              <span className="text-[11px] text-wm-muted">
+                {new Date(r.createdAt).toISOString().slice(0, 10)} · {r.eventCount} events · <span className="text-red-400">{money(r.totalRevenueAtRisk)}</span> at risk
+                <span className="ml-1.5 font-mono uppercase text-[9px] border border-wm-border rounded px-1 py-0.5">{r.source}</span>
+              </span>
+            </div>
+            <Download size={14} className="text-wm-muted shrink-0" />
+          </div>
+        ))}
+        {reports.length === 0 && <div className="p-4 text-sm text-wm-muted">No reports yet — generate an executive brief.</div>}
+      </div>
+    </section>
+  );
+}
+
 export function DashboardView({ data }: { data?: DashboardData }) {
   const demoData = useDashboardData();
   const d = data ?? demoData;
@@ -389,6 +433,8 @@ export function DashboardView({ data }: { data?: DashboardData }) {
         <Copilot ask={d.askCopilot} />
 
         <BusinessImpact impact={d.impact} assets={d.assets} onCreate={d.createAsset} onRemove={d.removeAsset} />
+
+        <Reports reports={d.reports} onGenerate={d.generateReport} />
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Watchlists */}

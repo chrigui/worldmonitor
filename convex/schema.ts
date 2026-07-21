@@ -251,6 +251,23 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_thread", ["threadId"]),
 
+  // Generated executive briefs (AI summary + rendered HTML), on-demand or scheduled.
+  reports: defineTable({
+    orgId: v.id("organizations"),
+    generatedByUserId: v.optional(v.id("users")),
+    title: v.string(),
+    periodStart: v.number(),
+    periodEnd: v.number(),
+    summary: v.string(),
+    keyJudgements: v.array(v.string()),
+    recommendations: v.array(v.string()),
+    totalRevenueAtRisk: v.number(),
+    eventCount: v.number(),
+    html: v.string(), // self-contained, printable
+    source: v.union(v.literal("manual"), v.literal("scheduled")),
+    createdAt: v.number(),
+  }).index("by_org", ["orgId"]),
+
   // Immutable audit trail. Every mutating action appends one row.
   auditLogs: defineTable({
     orgId: v.id("organizations"),

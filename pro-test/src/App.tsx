@@ -12,6 +12,7 @@ import {
   Landmark, Fuel
 } from 'lucide-react';
 import { t } from './i18n';
+import Dashboard from './dashboard/Dashboard';
 import dashboardFallback from './assets/worldmonitor-7-mar-2026.jpg';
 import wiredLogo from './assets/wired-logo.svg';
 
@@ -176,6 +177,7 @@ const Navbar = () => (
         <a href="#pro" className="hover:text-wm-green transition-colors">{t('nav.pro')}</a>
         <a href="#api" className="hover:text-wm-text transition-colors">{t('nav.api')}</a>
         <a href="#enterprise" className="hover:text-wm-text transition-colors">{t('nav.enterprise')}</a>
+        <a href="#dashboard" className="text-wm-green hover:text-green-300 transition-colors">Dashboard</a>
       </div>
       <a href="#waitlist" className="bg-wm-green text-wm-bg px-4 py-2 rounded-sm font-mono text-xs uppercase tracking-wider font-bold hover:bg-green-400 transition-colors">
         {t('nav.reserveAccess')}
@@ -1147,12 +1149,16 @@ const EnterprisePage = () => (
 
 /* ─── Page Layout ─── */
 export default function App() {
-  const [page, setPage] = useState(() => window.location.hash.startsWith('#enterprise') ? 'enterprise' : 'home');
+  const routeFor = (hash: string) =>
+    hash.startsWith('#dashboard') ? 'dashboard'
+    : hash.startsWith('#enterprise') ? 'enterprise'
+    : 'home';
+  const [page, setPage] = useState(() => routeFor(window.location.hash));
 
   useEffect(() => {
     const onHash = () => {
       const hash = window.location.hash;
-      const next = hash.startsWith('#enterprise') ? 'enterprise' : 'home';
+      const next = routeFor(hash);
       const wasEnterprise = page === 'enterprise';
       setPage(next);
       if (next === 'enterprise' && !wasEnterprise) window.scrollTo(0, 0);
@@ -1174,6 +1180,7 @@ export default function App() {
     }
   }, []);
 
+  if (page === 'dashboard') return <Dashboard />;
   if (page === 'enterprise') return <EnterprisePage />;
 
   return (

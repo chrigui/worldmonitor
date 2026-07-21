@@ -78,6 +78,26 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_org_user", ["orgId", "userId"]),
 
+  // Pending invitations. Resolved into a membership when the invited email
+  // first signs in (see users.upsertFromIdentity).
+  invitations: defineTable({
+    orgId: v.id("organizations"),
+    email: v.string(),
+    normalizedEmail: v.string(),
+    role: v.union(
+      v.literal("owner"),
+      v.literal("admin"),
+      v.literal("analyst"),
+      v.literal("viewer"),
+    ),
+    invitedByUserId: v.id("users"),
+    createdAt: v.number(),
+    acceptedAt: v.optional(v.number()),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_email", ["normalizedEmail"]),
+
   // Company / country / topic watchlists, scoped to an org.
   watchlists: defineTable({
     orgId: v.id("organizations"),

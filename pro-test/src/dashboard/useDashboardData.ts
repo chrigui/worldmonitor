@@ -85,6 +85,18 @@ export interface NotificationTarget {
   enabled: boolean;
 }
 
+export interface CopilotCitation {
+  sourceIndex: number;
+  quote: string;
+  title?: string;
+  url?: string;
+}
+export interface CopilotAnswer {
+  answer: string;
+  citations: CopilotCitation[];
+  confidence: number;
+}
+
 export interface DashboardData {
   loading: boolean;
   /** True while backed by in-memory demo data (no Convex/auth wired yet). */
@@ -112,6 +124,8 @@ export interface DashboardData {
   removeTarget: (id: string) => void;
   /** Simulate the evaluation engine against a batch of sample signals. */
   runEvaluation: () => number;
+  /** Ask the AI copilot a question, grounded in the org's intelligence. */
+  askCopilot: (question: string) => Promise<CopilotAnswer>;
 }
 
 const now = Date.now();
@@ -360,6 +374,45 @@ export function useDashboardData(): DashboardData {
     return created.length;
   }, [orgId, alertsByOrg, watchlistsByOrg, logActivity]);
 
+  const askCopilot = useCallback(async (question: string): Promise<CopilotAnswer> => {
+    // Local retrieval over demo evidence (alert events + watchlists). This mirrors
+    // the server RAG shape; live mode calls the Convex `copilot.ask` action instead.
+    const q = question.toLowerCase();
+    const terms = q.split(/[^a-z0-9]+/).filter((t) => t.length > 2);
+    const events = orgId ? eventsByOrg[orgId] ?? [] : [];
+    const lists = orgId ? watchlistsByOrg[orgId] ?? [] : [];
+    const sources: Array<{ index: number; title: string; text: string; url?: string }> = [];
+    let i = 0;
+    for (const e of events) {
+      sources.push({ index: i++, title: e.title, text: `${e.severity} · ${e.source ?? ''} · ${e.matched.join(', ')}`, url: undefined });
+    }
+    for (const w of lists) {
+      sources.push({ index: i++, title: `Watchlist: ${w.name}`, text: w.items.map((it) => it.label ?? it.value).join(', ') });
+    }
+    const scored = sources
+      .map((s) => ({ s, hits: terms.filter((t) => (s.title + ' ' + s.text).toLowerCase().includes(t)).length }))
+      .filter((x) => x.hits > 0)
+      .sort((a, b) => b.hits - a.hits)
+      .slice(0, 4);
+
+    await new Promise((r) => setTimeout(r, 350)); // simulate latency
+
+    if (scored.length === 0) {
+      return {
+        answer: `I don't have enough evidence in this workspace to answer confidently. No recent alert events or watchlist items match "${question}". Try adding a relevant watchlist or running the evaluation engine.`,
+        citations: [],
+        confidence: 0.15,
+      };
+    }
+    const citations: CopilotCitation[] = scored.map(({ s }) => ({ sourceIndex: s.index, quote: s.text, title: s.title, url: s.url }));
+    const bullets = scored.map(({ s }) => `• ${s.title} — ${s.text}`).join('\n');
+    return {
+      answer: `Based on your current intelligence, the most relevant signals are:\n${bullets}\n\nThese indicate active exposure related to "${question}". Review the cited events and consider tightening the associated alerts.`,
+      citations,
+      confidence: Math.min(0.9, 0.4 + scored.length * 0.12),
+    };
+  }, [orgId, eventsByOrg, watchlistsByOrg]);
+
   return {
     loading: false,
     demo: true,
@@ -385,5 +438,6 @@ export function useDashboardData(): DashboardData {
     createTarget,
     removeTarget,
     runEvaluation,
+    askCopilot,
   };
 }

@@ -184,6 +184,36 @@ export default defineSchema({
     deletedAt: v.optional(v.number()),
   }).index("by_org", ["orgId"]),
 
+  // AI Copilot conversation threads + messages (RAG over the org's intelligence).
+  copilotThreads: defineTable({
+    orgId: v.id("organizations"),
+    createdByUserId: v.id("users"),
+    title: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  }).index("by_org", ["orgId"]),
+
+  copilotMessages: defineTable({
+    threadId: v.id("copilotThreads"),
+    orgId: v.id("organizations"),
+    role: v.union(v.literal("user"), v.literal("assistant")),
+    content: v.string(),
+    // Grounding citations attached to assistant answers.
+    citations: v.optional(
+      v.array(
+        v.object({
+          sourceIndex: v.number(),
+          quote: v.string(),
+          title: v.optional(v.string()),
+          url: v.optional(v.string()),
+        }),
+      ),
+    ),
+    confidence: v.optional(v.number()), // 0..1
+    createdAt: v.number(),
+  }).index("by_thread", ["threadId"]),
+
   // Immutable audit trail. Every mutating action appends one row.
   auditLogs: defineTable({
     orgId: v.id("organizations"),

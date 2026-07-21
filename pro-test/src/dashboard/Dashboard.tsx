@@ -3,11 +3,12 @@ import { motion } from 'motion/react';
 import {
   LayoutDashboard, Users, ListChecks, Bell, Activity, Plus, Trash2,
   ChevronDown, ArrowLeft, ShieldCheck, Building2, Mail, Globe2, Building, Hash,
-  Zap, Check, PlayCircle, Send, Slack, Webhook,
+  Zap, Check, PlayCircle, Send, Slack, Webhook, Sparkles, Loader2, ExternalLink,
 } from 'lucide-react';
 import {
   useDashboardData, type Role, type WatchlistKind, type Watchlist, type OrgSummary,
   type Severity, type Channel, type DashboardData, type TargetType,
+  type CopilotAnswer, type CopilotCitation,
 } from './useDashboardData';
 
 const TARGET_ICON: Record<TargetType, typeof Send> = {
@@ -137,6 +138,92 @@ function WatchlistCard({ wl, onRemove }: { wl: Watchlist; onRemove: (id: string)
   );
 }
 
+interface CopilotMsg { role: 'user' | 'assistant'; content: string; citations?: CopilotCitation[]; confidence?: number }
+
+const SUGGESTED = ['What is my Red Sea exposure?', 'Summarize my top risks this week', 'Which suppliers are affected?'];
+
+function Copilot({ ask }: { ask: (q: string) => Promise<CopilotAnswer> }) {
+  const [q, setQ] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [msgs, setMsgs] = useState<CopilotMsg[]>([]);
+
+  const submit = async (question: string) => {
+    const text = question.trim();
+    if (!text || busy) return;
+    setMsgs((m) => [...m, { role: 'user', content: text }]);
+    setQ('');
+    setBusy(true);
+    try {
+      const a = await ask(text);
+      setMsgs((m) => [...m, { role: 'assistant', content: a.answer, citations: a.citations, confidence: a.confidence }]);
+    } catch (err) {
+      setMsgs((m) => [...m, { role: 'assistant', content: `Error: ${(err as Error).message}` }]);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <Sparkles size={16} className="text-wm-green" />
+        <h2 className="font-display font-bold">AI Copilot</h2>
+        <span className="text-[10px] font-mono uppercase text-wm-muted border border-wm-border rounded px-1.5 py-0.5">RAG · cited</span>
+      </div>
+      <div className="glass-panel flex flex-col">
+        <div className="max-h-[22rem] overflow-y-auto p-4 flex flex-col gap-4">
+          {msgs.length === 0 && (
+            <div className="flex flex-col gap-3 text-sm text-wm-muted">
+              <p>Ask about your exposure — answers are grounded in your alert events and watchlists, with citations.</p>
+              <div className="flex flex-wrap gap-2">
+                {SUGGESTED.map((s) => (
+                  <button key={s} onClick={() => submit(s)} className="text-xs border border-wm-border rounded px-2.5 py-1 hover:border-wm-green/40 hover:text-wm-text transition-colors">{s}</button>
+                ))}
+              </div>
+            </div>
+          )}
+          {msgs.map((m, i) => (
+            <div key={i} className={`flex flex-col gap-1.5 ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
+              <div className={`max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap ${m.role === 'user' ? 'bg-wm-green/10 border border-wm-green/30 text-wm-text' : 'bg-black/30 border border-wm-border text-wm-text'}`}>
+                {m.content}
+              </div>
+              {m.role === 'assistant' && typeof m.confidence === 'number' && (
+                <div className="flex items-center gap-2 text-[11px] text-wm-muted">
+                  <span className="font-mono">confidence {(m.confidence * 100).toFixed(0)}%</span>
+                  <span className="h-1 w-16 bg-white/10 rounded overflow-hidden"><span className="block h-full bg-wm-green" style={{ width: `${m.confidence * 100}%` }} /></span>
+                </div>
+              )}
+              {m.role === 'assistant' && m.citations && m.citations.length > 0 && (
+                <div className="flex flex-col gap-1 max-w-[85%]">
+                  {m.citations.map((c, ci) => (
+                    <div key={ci} className="flex items-start gap-1.5 text-[11px] text-wm-muted">
+                      <span className="font-mono text-wm-green shrink-0">[{c.sourceIndex}]</span>
+                      <span className="truncate">{c.title ?? c.quote}</span>
+                      {c.url && <a href={c.url} target="_blank" rel="noreferrer" className="text-wm-blue shrink-0"><ExternalLink size={11} /></a>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+          {busy && <div className="flex items-center gap-2 text-sm text-wm-muted"><Loader2 size={14} className="animate-spin text-wm-green" /> Analyzing your intelligence…</div>}
+        </div>
+        <form onSubmit={(e) => { e.preventDefault(); submit(q); }} className="border-t border-wm-border p-2 flex gap-2">
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Ask the copilot…"
+            className="flex-1 bg-transparent px-2 py-1.5 text-sm focus:outline-none"
+          />
+          <button type="submit" disabled={busy || !q.trim()} className="flex items-center gap-1 bg-wm-green/10 border border-wm-green/40 text-wm-green rounded px-3 py-1.5 text-sm hover:bg-wm-green/20 transition-colors disabled:opacity-40">
+            <Send size={14} /> Ask
+          </button>
+        </form>
+      </div>
+    </section>
+  );
+}
+
 export function DashboardView({ data }: { data?: DashboardData }) {
   const demoData = useDashboardData();
   const d = data ?? demoData;
@@ -187,6 +274,8 @@ export function DashboardView({ data }: { data?: DashboardData }) {
           <Tile icon={Bell} label="Open Alerts" value={openEvents} accent={openEvents > 0} />
           <Tile icon={Globe2} label="Tracked Entities" value={trackedEntities} />
         </div>
+
+        <Copilot ask={d.askCopilot} />
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Watchlists */}

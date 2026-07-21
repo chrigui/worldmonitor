@@ -1,12 +1,12 @@
-import { useEffect, useState, type ReactNode } from 'react';
-import { Authenticated, Unauthenticated, AuthLoading, useQuery, useMutation } from 'convex/react';
+import { useEffect, useState, useRef, type ReactNode } from 'react';
+import { Authenticated, Unauthenticated, AuthLoading, useQuery, useMutation, useAction } from 'convex/react';
 import { anyApi } from 'convex/server';
 import { SignInButton } from '@clerk/clerk-react';
 import { LayoutDashboard } from 'lucide-react';
 import { DashboardView } from '../Dashboard';
 import type {
   DashboardData, OrgSummary, Member, PendingInvite, Watchlist, ActivityEntry,
-  AlertDef, AlertEvent, NotificationTarget, WatchlistKind, Role, Severity, Channel, TargetType,
+  AlertDef, AlertEvent, NotificationTarget, CopilotAnswer, WatchlistKind, Role, Severity, Channel, TargetType,
 } from '../useDashboardData';
 import { SAMPLE_SIGNALS } from '../useDashboardData';
 
@@ -53,6 +53,8 @@ function LiveDashboardInner() {
   const evaluate = useMutation(api.alerts.evaluate);
   const createTargetM = useMutation(api.notificationTargets.create);
   const removeTargetM = useMutation(api.notificationTargets.remove);
+  const askAction = useAction(api.copilotNode.ask);
+  const copilotThread = useRef<string | null>(null);
 
   const d: DashboardData = {
     loading: orgsRaw === undefined,
@@ -79,6 +81,13 @@ function LiveDashboardInner() {
     createTarget: (type: TargetType, target: string) => { if (orgId) void createTargetM({ orgId, type, target }); },
     removeTarget: (id: string) => { void removeTargetM({ targetId: id }); },
     runEvaluation: () => { if (orgId) void evaluate({ orgId, signals: SAMPLE_SIGNALS }); return 0; },
+    askCopilot: async (question: string): Promise<CopilotAnswer> => {
+      if (!orgId) return { answer: 'Select an organization first.', citations: [], confidence: 0 };
+      const r = await askAction({ orgId, question, threadId: copilotThread.current ?? undefined }) as
+        { threadId: string; answer: string; citations: CopilotAnswer['citations']; confidence: number };
+      copilotThread.current = r.threadId;
+      return { answer: r.answer, citations: r.citations, confidence: r.confidence };
+    },
   };
 
   if (orgsRaw !== undefined && orgs.length === 0) {

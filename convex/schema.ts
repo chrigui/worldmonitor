@@ -168,9 +168,21 @@ export default defineSchema({
     createdAt: v.number(),
     acknowledgedAt: v.optional(v.number()),
     acknowledgedByUserId: v.optional(v.id("users")),
+    deliveredAt: v.optional(v.number()), // set once delivery has been attempted
   })
     .index("by_org", ["orgId"])
     .index("by_alert", ["alertId"]),
+
+  // Per-org delivery destinations for alert events (Slack / webhook / email).
+  notificationTargets: defineTable({
+    orgId: v.id("organizations"),
+    type: v.union(v.literal("slack"), v.literal("webhook"), v.literal("email")),
+    target: v.string(), // Slack/webhook URL, or email address
+    label: v.optional(v.string()),
+    enabled: v.boolean(),
+    createdAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  }).index("by_org", ["orgId"]),
 
   // Immutable audit trail. Every mutating action appends one row.
   auditLogs: defineTable({

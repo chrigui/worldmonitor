@@ -77,6 +77,14 @@ export interface AlertEvent {
   acknowledged: boolean;
 }
 
+export type TargetType = 'slack' | 'webhook' | 'email';
+export interface NotificationTarget {
+  id: string;
+  type: TargetType;
+  target: string;
+  enabled: boolean;
+}
+
 export interface DashboardData {
   loading: boolean;
   /** True while backed by in-memory demo data (no Convex/auth wired yet). */
@@ -90,6 +98,7 @@ export interface DashboardData {
   activity: ActivityEntry[];
   alerts: AlertDef[];
   alertEvents: AlertEvent[];
+  notificationTargets: NotificationTarget[];
   setSelectedOrgId: (id: string) => void;
   createWatchlist: (name: string, kind: WatchlistKind) => void;
   removeWatchlist: (id: string) => void;
@@ -99,6 +108,8 @@ export interface DashboardData {
   toggleAlert: (id: string) => void;
   removeAlert: (id: string) => void;
   acknowledgeEvent: (id: string) => void;
+  createTarget: (type: TargetType, target: string) => void;
+  removeTarget: (id: string) => void;
   /** Simulate the evaluation engine against a batch of sample signals. */
   runEvaluation: () => number;
 }
@@ -201,6 +212,16 @@ export const SAMPLE_SIGNALS: Array<{ severity: Severity; title: string; source: 
   { severity: 'low', title: 'Minor port maintenance scheduled', source: 'PortWatch', countries: ['US'] },
 ];
 
+const DEMO_TARGETS: Record<string, NotificationTarget[]> = {
+  org_meridian: [
+    { id: 'nt1', type: 'slack', target: 'https://hooks.slack.com/services/T000/B000/xxxx', enabled: true },
+    { id: 'nt2', type: 'email', target: 'risk-desk@meridian.com', enabled: true },
+  ],
+  org_northwind: [
+    { id: 'nt3', type: 'webhook', target: 'https://northwind.example.com/hooks/alerts', enabled: false },
+  ],
+};
+
 const SEV_RANK: Record<Severity, number> = { low: 0, medium: 1, high: 2, critical: 3 };
 
 let idc = 0;
@@ -227,6 +248,7 @@ export function useDashboardData(): DashboardData {
   const [activityByOrg, setActivityByOrg] = useState<Record<string, ActivityEntry[]>>(DEMO_ACTIVITY);
   const [alertsByOrg, setAlertsByOrg] = useState<Record<string, AlertDef[]>>(DEMO_ALERTS);
   const [eventsByOrg, setEventsByOrg] = useState<Record<string, AlertEvent[]>>(DEMO_ALERT_EVENTS);
+  const [targetsByOrg, setTargetsByOrg] = useState<Record<string, NotificationTarget[]>>(DEMO_TARGETS);
 
   const orgId = selectedOrgId;
   const selectedOrg = useMemo(() => orgs.find((o) => o.id === orgId) ?? null, [orgs, orgId]);
@@ -297,6 +319,18 @@ export function useDashboardData(): DashboardData {
     }));
   }, [orgId]);
 
+  const createTarget = useCallback((type: TargetType, target: string) => {
+    if (!orgId || !target.trim()) return;
+    const t: NotificationTarget = { id: nextId('nt'), type, target: target.trim(), enabled: true };
+    setTargetsByOrg((prev) => ({ ...prev, [orgId]: [t, ...(prev[orgId] ?? [])] }));
+    logActivity(orgId, `notificationTarget.create — ${type}`);
+  }, [orgId, logActivity]);
+
+  const removeTarget = useCallback((id: string) => {
+    if (!orgId) return;
+    setTargetsByOrg((prev) => ({ ...prev, [orgId]: (prev[orgId] ?? []).filter((t) => t.id !== id) }));
+  }, [orgId]);
+
   const runEvaluation = useCallback((): number => {
     if (!orgId) return 0;
     const alerts = (alertsByOrg[orgId] ?? []).filter((a) => a.enabled);
@@ -338,6 +372,7 @@ export function useDashboardData(): DashboardData {
     activity: orgId ? activityByOrg[orgId] ?? [] : [],
     alerts: orgId ? alertsByOrg[orgId] ?? [] : [],
     alertEvents: orgId ? eventsByOrg[orgId] ?? [] : [],
+    notificationTargets: orgId ? targetsByOrg[orgId] ?? [] : [],
     setSelectedOrgId,
     createWatchlist,
     removeWatchlist,
@@ -347,6 +382,8 @@ export function useDashboardData(): DashboardData {
     toggleAlert,
     removeAlert,
     acknowledgeEvent,
+    createTarget,
+    removeTarget,
     runEvaluation,
   };
 }

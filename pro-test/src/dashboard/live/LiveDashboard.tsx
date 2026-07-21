@@ -6,7 +6,7 @@ import { LayoutDashboard } from 'lucide-react';
 import { DashboardView } from '../Dashboard';
 import type {
   DashboardData, OrgSummary, Member, PendingInvite, Watchlist, ActivityEntry,
-  AlertDef, AlertEvent, WatchlistKind, Role, Severity, Channel,
+  AlertDef, AlertEvent, NotificationTarget, WatchlistKind, Role, Severity, Channel, TargetType,
 } from '../useDashboardData';
 import { SAMPLE_SIGNALS } from '../useDashboardData';
 
@@ -39,6 +39,7 @@ function LiveDashboardInner() {
   const watchlists = (useQuery(api.watchlists.list, orgArg) as Watchlist[] | undefined) ?? [];
   const alerts = (useQuery(api.alerts.list, orgArg) as AlertDef[] | undefined) ?? [];
   const alertEvents = (useQuery(api.alerts.listEvents, orgArg) as AlertEvent[] | undefined) ?? [];
+  const notificationTargets = (useQuery(api.notificationTargets.list, orgArg) as NotificationTarget[] | undefined) ?? [];
   const activity = (useQuery(api.auditLogs.listForOrg, orgArg) as ActivityEntry[] | undefined) ?? [];
 
   const createWL = useMutation(api.watchlists.create);
@@ -50,6 +51,8 @@ function LiveDashboardInner() {
   const removeAl = useMutation(api.alerts.remove);
   const ackEv = useMutation(api.alerts.acknowledgeEvent);
   const evaluate = useMutation(api.alerts.evaluate);
+  const createTargetM = useMutation(api.notificationTargets.create);
+  const removeTargetM = useMutation(api.notificationTargets.remove);
 
   const d: DashboardData = {
     loading: orgsRaw === undefined,
@@ -63,6 +66,7 @@ function LiveDashboardInner() {
     activity,
     alerts,
     alertEvents,
+    notificationTargets,
     setSelectedOrgId: setSel,
     createWatchlist: (name: string, kind: WatchlistKind) => { if (orgId) void createWL({ orgId, name, kind }); },
     removeWatchlist: (id: string) => { void removeWL({ watchlistId: id }); },
@@ -72,6 +76,8 @@ function LiveDashboardInner() {
     toggleAlert: (id: string) => { const a = alerts.find((x) => x.id === id); void updateAl({ alertId: id, enabled: !(a?.enabled) }); },
     removeAlert: (id: string) => { void removeAl({ alertId: id }); },
     acknowledgeEvent: (id: string) => { void ackEv({ eventId: id }); },
+    createTarget: (type: TargetType, target: string) => { if (orgId) void createTargetM({ orgId, type, target }); },
+    removeTarget: (id: string) => { void removeTargetM({ targetId: id }); },
     runEvaluation: () => { if (orgId) void evaluate({ orgId, signals: SAMPLE_SIGNALS }); return 0; },
   };
 

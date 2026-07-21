@@ -1,5 +1,6 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { QueryCtx, MutationCtx } from "./_generated/server";
 import { requireOrgRole } from "./lib/auth";
@@ -183,61 +184,90 @@ export const remove = mutation({
 });
 
 /**
- * Evaluation engine. Runs a batch of candidate signals against every enabled
- * alert in the org and records an `alertEvents` row for each hit. In production
- * a scheduled action pulls signals from the news/intelligence API and calls
- * this; here it accepts signals directly so it is drivable and testable.
+ * Core of the evaluation engine (auth-agnostic). Runs a batch of candidate
+ * signals against every enabled alert in the org, records an `alertEvents` row
+ * per hit, and schedules delivery of the new events. Shared by the public
+ * `evaluate` (analyst-gated) and the internal scheduled evaluator.
+ */
+async function evaluateSignals(
+  ctx: MutationCtx,
+  orgId: Id<"organizations">,
+  signals: Signal[],
+): Promise<{ alertsEvaluated: number; eventIds: Id<"alertEvents">[] }> {
+  const alerts = (
+    await ctx.db
+      .query("alerts")
+      .withIndex("by_org", (q) => q.eq("orgId", orgId))
+      .collect()
+  ).filter((a) => !a.deletedAt && a.enabled);
+
+  // Cache watchlist scope per alert to avoid repeated reads.
+  const scopeCache = new Map<string, WatchlistItem[]>();
+  const eventIds: Id<"alertEvents">[] = [];
+  const now = Date.now();
+
+  for (const alert of alerts) {
+    const key = alert.watchlistId ?? "none";
+    let items = scopeCache.get(key);
+    if (!items) {
+      items = await scopeItems(ctx, alert.watchlistId);
+      scopeCache.set(key, items);
+    }
+    for (const signal of signals) {
+      const { fires, matched } = signalFiresAlert(signal, alert.minSeverity, items);
+      if (!fires) continue;
+      const id = await ctx.db.insert("alertEvents", {
+        orgId,
+        alertId: alert._id,
+        severity: signal.severity,
+        title: signal.title,
+        url: signal.url,
+        source: signal.source,
+        matched,
+        createdAt: now,
+      });
+      eventIds.push(id);
+    }
+  }
+
+  if (eventIds.length > 0) {
+    // Deliver out-of-band so a slow webhook can't block the mutation.
+    await ctx.scheduler.runAfter(0, internal.alertDelivery.deliverEvents, { eventIds });
+  }
+  return { alertsEvaluated: alerts.length, eventIds };
+}
+
+/**
+ * Public evaluation entry point (analyst+). Accepts signals directly so it is
+ * drivable and testable from the client.
  */
 export const evaluate = mutation({
   args: { orgId: v.id("organizations"), signals: v.array(signalValidator) },
   handler: async (ctx, args) => {
     const { user } = await requireOrgRole(ctx, args.orgId, "analyst");
-
-    const alerts = (
-      await ctx.db
-        .query("alerts")
-        .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
-        .collect()
-    ).filter((a) => !a.deletedAt && a.enabled);
-
-    // Cache watchlist scope per alert to avoid repeated reads.
-    const scopeCache = new Map<string, WatchlistItem[]>();
-    let eventsCreated = 0;
-    const now = Date.now();
-
-    for (const alert of alerts) {
-      const key = alert.watchlistId ?? "none";
-      let items = scopeCache.get(key);
-      if (!items) {
-        items = await scopeItems(ctx, alert.watchlistId);
-        scopeCache.set(key, items);
-      }
-      for (const signal of args.signals as Signal[]) {
-        const { fires, matched } = signalFiresAlert(signal, alert.minSeverity, items);
-        if (!fires) continue;
-        await ctx.db.insert("alertEvents", {
-          orgId: args.orgId,
-          alertId: alert._id,
-          severity: signal.severity,
-          title: signal.title,
-          url: signal.url,
-          source: signal.source,
-          matched,
-          createdAt: now,
-        });
-        eventsCreated++;
-      }
-    }
-
+    const { alertsEvaluated, eventIds } = await evaluateSignals(
+      ctx,
+      args.orgId,
+      args.signals as Signal[],
+    );
     await writeAudit(ctx, {
       orgId: args.orgId,
       actorUserId: user._id,
       action: "alert.evaluate",
       targetType: "organization",
       targetId: args.orgId,
-      metadata: { signals: args.signals.length, alerts: alerts.length, eventsCreated },
+      metadata: { signals: args.signals.length, alerts: alertsEvaluated, eventsCreated: eventIds.length },
     });
-    return { alertsEvaluated: alerts.length, eventsCreated };
+    return { alertsEvaluated, eventsCreated: eventIds.length };
+  },
+});
+
+/** System-initiated evaluation (no user identity) — called by the scheduler. */
+export const internalEvaluate = internalMutation({
+  args: { orgId: v.id("organizations"), signals: v.array(signalValidator) },
+  handler: async (ctx, args) => {
+    const { eventIds } = await evaluateSignals(ctx, args.orgId, args.signals as Signal[]);
+    return { eventsCreated: eventIds.length };
   },
 });
 

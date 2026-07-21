@@ -3,12 +3,16 @@ import { motion } from 'motion/react';
 import {
   LayoutDashboard, Users, ListChecks, Bell, Activity, Plus, Trash2,
   ChevronDown, ArrowLeft, ShieldCheck, Building2, Mail, Globe2, Building, Hash,
-  Zap, Check, PlayCircle,
+  Zap, Check, PlayCircle, Send, Slack, Webhook,
 } from 'lucide-react';
 import {
   useDashboardData, type Role, type WatchlistKind, type Watchlist, type OrgSummary,
-  type Severity, type Channel, type DashboardData,
+  type Severity, type Channel, type DashboardData, type TargetType,
 } from './useDashboardData';
+
+const TARGET_ICON: Record<TargetType, typeof Send> = {
+  slack: Slack, webhook: Webhook, email: Mail,
+};
 import { LIVE_MODE } from './live/convexClient';
 
 const LiveDashboard = lazy(() => import('./live/LiveDashboard'));
@@ -144,6 +148,8 @@ export function DashboardView({ data }: { data?: DashboardData }) {
   const [alertSev, setAlertSev] = useState<Severity>('high');
   const [alertChannel, setAlertChannel] = useState<Channel>('email');
   const [evalMsg, setEvalMsg] = useState<string | null>(null);
+  const [targetType, setTargetType] = useState<TargetType>('slack');
+  const [targetValue, setTargetValue] = useState('');
 
   const trackedEntities = d.watchlists.reduce((n, w) => n + w.items.length, 0);
   const openEvents = d.alertEvents.filter((e) => !e.acknowledged).length;
@@ -350,6 +356,51 @@ export function DashboardView({ data }: { data?: DashboardData }) {
                 ))}
                 {d.alertEvents.length === 0 && <div className="p-4 text-sm text-wm-muted">No alert events yet — run the evaluation engine.</div>}
               </div>
+            </div>
+          </div>
+
+          {/* Delivery channels */}
+          <div className="flex flex-col gap-2 mt-1">
+            <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-wm-muted font-mono">
+              <Send size={12} className="text-wm-green" /> Delivery channels
+            </span>
+            <form
+              onSubmit={(e) => { e.preventDefault(); d.createTarget(targetType, targetValue); setTargetValue(''); }}
+              className="flex gap-2 flex-wrap"
+            >
+              <select value={targetType} onChange={(e) => setTargetType(e.target.value as TargetType)}
+                className="bg-black/30 border border-wm-border rounded px-2 py-2 text-sm focus:outline-none focus:border-wm-green/50">
+                <option value="slack">Slack</option>
+                <option value="webhook">Webhook</option>
+                <option value="email">Email</option>
+              </select>
+              <input
+                value={targetValue}
+                onChange={(e) => setTargetValue(e.target.value)}
+                placeholder={targetType === 'email' ? 'alerts@company.com' : 'https://…'}
+                className="flex-1 min-w-[200px] bg-black/30 border border-wm-border rounded px-3 py-2 text-sm focus:outline-none focus:border-wm-green/50"
+              />
+              <button type="submit" className="flex items-center gap-1 bg-wm-green/10 border border-wm-green/40 text-wm-green rounded px-3 py-2 text-sm hover:bg-wm-green/20 transition-colors">
+                <Plus size={14} /> Add channel
+              </button>
+            </form>
+            <div className="glass-panel divide-y divide-wm-border">
+              {d.notificationTargets.map((tg) => {
+                const Icon = TARGET_ICON[tg.type];
+                return (
+                  <div key={tg.id} className="p-3 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Icon size={15} className={tg.enabled ? 'text-wm-green' : 'text-wm-muted'} />
+                      <span className="text-[10px] font-mono uppercase text-wm-muted border border-wm-border rounded px-1.5 py-0.5">{tg.type}</span>
+                      <span className={`text-sm truncate font-mono ${tg.enabled ? 'text-wm-text' : 'text-wm-muted line-through'}`}>{tg.target}</span>
+                    </div>
+                    <button onClick={() => d.removeTarget(tg.id)} className="text-wm-muted hover:text-red-400 shrink-0" aria-label="Remove channel">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                );
+              })}
+              {d.notificationTargets.length === 0 && <div className="p-4 text-sm text-wm-muted">No delivery channels — alerts show in-app only.</div>}
             </div>
           </div>
         </section>

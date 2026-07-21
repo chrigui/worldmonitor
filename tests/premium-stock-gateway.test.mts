@@ -11,7 +11,7 @@ afterEach(() => {
 });
 
 describe('premium stock gateway enforcement', () => {
-  it('requires a World Monitor key for premium stock RPCs even from trusted browser origins', async () => {
+  it('requires a SentinelIQ key for premium stock RPCs even from trusted browser origins', async () => {
     const handler = createDomainGateway([
       {
         method: 'GET',

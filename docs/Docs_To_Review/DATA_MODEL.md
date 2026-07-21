@@ -1,6 +1,6 @@
 # Data Model Reference
 
-Comprehensive data model documentation for **World Monitor** — an AI-powered real-time global intelligence dashboard. This reference covers all TypeScript interfaces, data structures, and their relationships across the system.
+Comprehensive data model documentation for **SentinelIQ** — an AI-powered real-time global intelligence dashboard. This reference covers all TypeScript interfaces, data structures, and their relationships across the system.
 
 > **Source of truth:** [`src/types/index.ts`](../src/types/index.ts) (1,297 lines, 60+ interfaces)
 

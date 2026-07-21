@@ -1,6 +1,6 @@
 # Panel System Documentation
 
-> **World Monitor** — Config-driven panel architecture powering three site variants.
+> **SentinelIQ** — Config-driven panel architecture powering three site variants.
 >
 > Source of truth: [`src/config/panels.ts`](../src/config/panels.ts) · Panel base class: [`src/components/Panel.ts`](../src/components/Panel.ts) · App wiring: [`src/App.ts`](../src/App.ts)
 
@@ -25,7 +25,7 @@
 
 ## 1. Overview
 
-World Monitor uses a **config-driven panel system** where every dashboard tile — from live news feeds to AI insights to market data — is declared as a `PanelConfig` entry inside a variant-specific configuration object. The system is designed around three principles:
+SentinelIQ uses a **config-driven panel system** where every dashboard tile — from live news feeds to AI insights to market data — is declared as a `PanelConfig` entry inside a variant-specific configuration object. The system is designed around three principles:
 
 1. **Variant isolation** — Each site variant (`full`, `tech`, `finance`) declares its own panel set with variant-appropriate display names and priorities. The build-time environment variable `VITE_VARIANT` selects which set is exported.
 2. **User customization** — Users can toggle panel visibility, reorder panels via drag-and-drop, and resize panels via a drag handle. All preferences persist to `localStorage`.
@@ -721,7 +721,7 @@ Panels are destroyed when the App instance is torn down. The `Panel.destroy()` m
 
 ## 11. Adding a New Panel
 
-Step-by-step guide to adding a new panel to World Monitor.
+Step-by-step guide to adding a new panel to SentinelIQ.
 
 ### Step 1: Define the Panel Config
 

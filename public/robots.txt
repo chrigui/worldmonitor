@@ -1,4 +1,4 @@
-# World Monitor - protect API routes from crawlers
+# SentinelIQ - protect API routes from crawlers
 User-agent: *
 Allow: /
 Disallow: /api/

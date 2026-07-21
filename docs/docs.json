@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/schema.json",
   "theme": "mint",
-  "name": "World Monitor",
+  "name": "SentinelIQ",
   "description": "AI-powered real-time global intelligence dashboard",
   "logo": {
     "dark": "/logo.png",
@@ -12,7 +12,7 @@
   "seo": {
     "metatags": {
       "og:image": "https://www.worldmonitor.app/favico/og-image.png",
-      "og:site_name": "World Monitor Documentation",
+      "og:site_name": "SentinelIQ Documentation",
       "og:type": "website",
       "og:locale": "en_US",
       "twitter:card": "summary_large_image",
@@ -267,7 +267,7 @@
     },
     "links": [
       {
-        "header": "World Monitor",
+        "header": "SentinelIQ",
         "items": [
           {
             "label": "Dashboard",

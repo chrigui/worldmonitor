@@ -1,4 +1,4 @@
-# Documentation Roadmap — World Monitor
+# Documentation Roadmap — SentinelIQ
 
 > **Purpose**: Comprehensive task list to bring project documentation to production-grade quality for AI agent-assisted development. Each task is scoped, self-contained, and AI-actionable.
 >

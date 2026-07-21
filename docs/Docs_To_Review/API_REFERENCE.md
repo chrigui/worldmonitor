@@ -1,6 +1,6 @@
-# World Monitor — API Reference
+# SentinelIQ — API Reference
 
-> Comprehensive reference for all Vercel Edge Function endpoints powering the World Monitor intelligence dashboard.
+> Comprehensive reference for all Vercel Edge Function endpoints powering the SentinelIQ intelligence dashboard.
 
 **Base URL**: All endpoints are relative to `/api/` (e.g., `https://worldmonitor.app/api/earthquakes`).
 
@@ -94,7 +94,7 @@
 
 ## Overview
 
-World Monitor exposes **60+ serverless endpoints** deployed as **Vercel Edge Functions** (unless noted otherwise). Every endpoint:
+SentinelIQ exposes **60+ serverless endpoints** deployed as **Vercel Edge Functions** (unless noted otherwise). Every endpoint:
 
 1. Applies **CORS middleware** — only whitelisted origins may call the API.
 2. Optionally applies **IP-based rate limiting** via a sliding-window algorithm.
@@ -2279,7 +2279,7 @@ Content-Type: application/json
 
 ## Caching Architecture
 
-World Monitor uses a **multi-tier caching strategy** to minimize upstream API calls, reduce latency, and stay within third-party rate limits.
+SentinelIQ uses a **multi-tier caching strategy** to minimize upstream API calls, reduce latency, and stay within third-party rate limits.
 
 ### Tier Overview
 

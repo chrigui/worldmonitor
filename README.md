@@ -1,4 +1,4 @@
-# World Monitor
+# SentinelIQ
 
 **Real-time global intelligence dashboard** — AI-powered news aggregation, geopolitical monitoring, and infrastructure tracking in a unified situational awareness interface.
 
@@ -29,11 +29,11 @@
   <a href="https://github.com/koala73/worldmonitor/releases/latest"><strong>All Releases</strong></a>
 </p>
 
-![World Monitor Dashboard](docs/images/worldmonitor-7-mar-2026.jpg)
+![SentinelIQ Dashboard](docs/images/worldmonitor-7-mar-2026.jpg)
 
 ---
 
-## Why World Monitor?
+## Why SentinelIQ?
 
 | Problem                            | Solution                                                                                                   |
 | ---------------------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -56,7 +56,7 @@
 
 | Variant             | URL                                                          | Focus                                            |
 | ------------------- | ------------------------------------------------------------ | ------------------------------------------------ |
-| **World Monitor**   | [worldmonitor.app](https://worldmonitor.app)                 | Geopolitics, military, conflicts, infrastructure |
+| **SentinelIQ**   | [worldmonitor.app](https://worldmonitor.app)                 | Geopolitics, military, conflicts, infrastructure |
 | **Tech Monitor**    | [tech.worldmonitor.app](https://tech.worldmonitor.app)       | Startups, AI/ML, cloud, cybersecurity            |
 | **Finance Monitor** | [finance.worldmonitor.app](https://finance.worldmonitor.app) | Global markets, trading, central banks, Gulf FDI |
 | **Commodity Monitor** | [commodity.worldmonitor.app](https://commodity.worldmonitor.app) | Mining, metals, energy commodities, critical minerals |
@@ -221,14 +221,14 @@ All five variants run from a single codebase — switch between them with one cl
 
 A single codebase produces five specialized dashboards, each with distinct feeds, panels, map layers, and branding:
 
-| Aspect                | World Monitor                                        | Tech Monitor                                    | Finance Monitor                                  | Commodity Monitor                                         | Happy Monitor                                         |
+| Aspect                | SentinelIQ                                        | Tech Monitor                                    | Finance Monitor                                  | Commodity Monitor                                         | Happy Monitor                                         |
 | --------------------- | ---------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------ | --------------------------------------------------------- | ----------------------------------------------------- |
 | **Domain**            | worldmonitor.app                                     | tech.worldmonitor.app                           | finance.worldmonitor.app                         | commodity.worldmonitor.app                                | happy.worldmonitor.app                                |
 | **Focus**             | Geopolitics, military, conflicts                     | AI/ML, startups, cybersecurity                  | Markets, trading, central banks                  | Mining, metals, energy commodities, critical minerals     | Good news, conservation, human progress               |
 | **RSS Feeds**         | 15 categories, 200+ feeds (politics, MENA, Africa, think tanks) | 21 categories, 152 feeds (AI, VC blogs, startups, GitHub) | 14 categories, 55 feeds (forex, bonds, commodities, IPOs) | 10 categories, 50+ feeds (gold/silver, energy, mining, critical minerals, base metals) | 5 categories, 21 positive-news sources (GNN, Positive.News, Upworthy) |
 | **Panels**            | 45 (strategic posture, CII, cascade, trade policy, airline intel, predictions) | 28 (AI labs, unicorns, accelerators, tech readiness) | 27 (forex, bonds, derivatives, trade policy, gulf economies) | 16 (live prices, sector heatmap, gold/silver, energy, mining, critical minerals, base metals, supply chain) | 10 (good news, breakthroughs, conservation, renewables, giving) |
 | **Unique Map Layers** | Military bases, nuclear facilities, hotspots         | Tech HQs, cloud regions, startup hubs           | Stock exchanges, central banks, Gulf investments | Mine sites, processing plants, commodity ports, commodity hubs, pipelines, trade routes | Positive events, kindness, species recovery, renewables |
-| **Desktop App**       | World Monitor.app / .exe / .AppImage                 | Tech Monitor.app / .exe / .AppImage             | Finance Monitor.app / .exe / .AppImage           | (web-only)                                                | (web-only)                                            |
+| **Desktop App**       | SentinelIQ.app / .exe / .AppImage                 | Tech Monitor.app / .exe / .AppImage             | Finance Monitor.app / .exe / .AppImage           | (web-only)                                                | (web-only)                                            |
 
 Single-deployment consolidation — all five variants serve from one Vercel deployment, determined by hostname. Build-time `VITE_VARIANT` tree-shakes unused data. Runtime variant selector in the header bar.
 
@@ -346,7 +346,7 @@ See [`.env.example`](./.env.example) for the complete list with registration lin
 
 ## Self-Hosting
 
-World Monitor relies on **60+ Vercel Edge Functions** in the `api/` directory for RSS proxying, data caching, and API key isolation. Running `npm run dev` alone starts only the Vite frontend — the edge functions won't execute, and most panels (news feeds, markets, AI summaries) will be empty.
+SentinelIQ relies on **60+ Vercel Edge Functions** in the `api/` directory for RSS proxying, data caching, and API key isolation. Running `npm run dev` alone starts only the Vite frontend — the edge functions won't execute, and most panels (news feeds, markets, AI summaries) will be empty.
 
 ### Option 1: Deploy to Vercel (Recommended)
 
@@ -499,10 +499,10 @@ npm run build:happy      # Build happy variant
 npm run typecheck    # TypeScript type checking (tsc --noEmit)
 
 # Desktop packaging
-npm run desktop:package:macos:full      # .app + .dmg (World Monitor)
+npm run desktop:package:macos:full      # .app + .dmg (SentinelIQ)
 npm run desktop:package:macos:tech      # .app + .dmg (Tech Monitor)
 npm run desktop:package:macos:finance   # .app + .dmg (Finance Monitor)
-npm run desktop:package:windows:full    # .exe + .msi (World Monitor)
+npm run desktop:package:windows:full    # .exe + .msi (SentinelIQ)
 npm run desktop:package:windows:tech    # .exe + .msi (Tech Monitor)
 npm run desktop:package:windows:finance # .exe + .msi (Finance Monitor)
 
@@ -535,7 +535,7 @@ See [full roadmap](./docs/DOCUMENTATION.md#roadmap).
 
 ## Support the Project
 
-If you find World Monitor useful:
+If you find SentinelIQ useful:
 
 - **Star this repo** to help others discover it
 - **Share** with colleagues interested in OSINT
@@ -555,7 +555,7 @@ This project is dual-licensed:
 
 **You are free to (non-commercial):**
 
-- **Use** — run World Monitor for personal, educational, or research purposes
+- **Use** — run SentinelIQ for personal, educational, or research purposes
 - **Study** — read, audit, and learn from the source code
 - **Modify** — adapt, extend, and build upon the code for non-commercial use
 - **Distribute** — share copies with anyone under AGPL-3.0
@@ -570,11 +570,11 @@ This project is dual-licensed:
 
 **Commercial use is prohibited without a commercial license.** This includes:
 
-- Rebranding, white-labeling, or renaming World Monitor and deploying it as your own product
-- Running World Monitor (or a fork) as a paid service or behind a paywall
-- Embedding World Monitor code, components, or data pipelines into a commercial product
-- Using World Monitor internally at a for-profit company for revenue or competitive advantage
-- Selling data collected or processed through World Monitor
+- Rebranding, white-labeling, or renaming SentinelIQ and deploying it as your own product
+- Running SentinelIQ (or a fork) as a paid service or behind a paywall
+- Embedding SentinelIQ code, components, or data pipelines into a commercial product
+- Using SentinelIQ internally at a for-profit company for revenue or competitive advantage
+- Selling data collected or processed through SentinelIQ
 
 **In plain terms:**
 

@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to World Monitor are documented here.
+All notable changes to SentinelIQ are documented here.
 
 ## [2.6.1] - 2026-03-11
 

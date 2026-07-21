@@ -110,7 +110,7 @@ At sidecar launch, the vault is read, parsed, and injected as environment variab
 
 ### Desktop Runtime Configuration Schema
 
-World Monitor desktop uses a runtime configuration schema with per-feature toggles and secret-backed credentials.
+SentinelIQ desktop uses a runtime configuration schema with per-feature toggles and secret-backed credentials.
 
 ### Secret keys
 
@@ -169,7 +169,7 @@ If required secrets are missing/disabled:
 - NASA FIRMS: satellite fire detection returns empty state.
 - Wingbits: flight enrichment disabled, heuristic-only flight classification remains.
 - AIS / OpenSky relay: live tracking features are disabled cleanly.
-- World Monitor API key: cloud fallback is blocked; desktop operates local-only.
+- SentinelIQ API key: cloud fallback is blocked; desktop operates local-only.
 
 ## Sidecar
 
@@ -185,7 +185,7 @@ The `/api/service-status` health check endpoint is exempt from token validation 
 
 ### Dynamic Port Allocation
 
-The sidecar defaults to port 46123 but handles `EADDRINUSE` gracefully — if the port is occupied (another World Monitor instance, or any other process), the sidecar binds to port 0 and lets the OS assign an available ephemeral port. The actual bound port is written to a port file (`sidecar.port` in the logs directory) that the Rust host polls on startup (100ms intervals, 5-second timeout). The frontend discovers the port at runtime via the `get_local_api_port` IPC command, and `getApiBaseUrl()` in `runtime.ts` is the canonical accessor — hardcoding port 46123 in frontend code is prohibited. The CSP `connect-src` directive uses `http://127.0.0.1:*` to accommodate any port.
+The sidecar defaults to port 46123 but handles `EADDRINUSE` gracefully — if the port is occupied (another SentinelIQ instance, or any other process), the sidecar binds to port 0 and lets the OS assign an available ephemeral port. The actual bound port is written to a port file (`sidecar.port` in the logs directory) that the Rust host polls on startup (100ms intervals, 5-second timeout). The frontend discovers the port at runtime via the `get_local_api_port` IPC command, and `getApiBaseUrl()` in `runtime.ts` is the canonical accessor — hardcoding port 46123 in frontend code is prohibited. The CSP `connect-src` directive uses `http://127.0.0.1:*` to accommodate any port.
 
 ### Local RSS Proxy
 

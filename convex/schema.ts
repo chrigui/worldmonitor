@@ -151,6 +151,27 @@ export default defineSchema({
     deletedAt: v.optional(v.number()),
   }).index("by_org", ["orgId"]),
 
+  // Matches produced by the alerts evaluation engine (one per signal×alert hit).
+  alertEvents: defineTable({
+    orgId: v.id("organizations"),
+    alertId: v.id("alerts"),
+    severity: v.union(
+      v.literal("low"),
+      v.literal("medium"),
+      v.literal("high"),
+      v.literal("critical"),
+    ),
+    title: v.string(),
+    url: v.optional(v.string()),
+    source: v.optional(v.string()),
+    matched: v.array(v.string()), // watchlist item values that matched
+    createdAt: v.number(),
+    acknowledgedAt: v.optional(v.number()),
+    acknowledgedByUserId: v.optional(v.id("users")),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_alert", ["alertId"]),
+
   // Immutable audit trail. Every mutating action appends one row.
   auditLogs: defineTable({
     orgId: v.id("organizations"),

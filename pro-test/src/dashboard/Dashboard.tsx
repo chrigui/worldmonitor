@@ -3,10 +3,19 @@ import { motion } from 'motion/react';
 import {
   LayoutDashboard, Users, ListChecks, Bell, Activity, Plus, Trash2,
   ChevronDown, ArrowLeft, ShieldCheck, Building2, Mail, Globe2, Building, Hash,
+  Zap, Check, PlayCircle,
 } from 'lucide-react';
 import {
   useDashboardData, type Role, type WatchlistKind, type Watchlist, type OrgSummary,
+  type Severity, type Channel,
 } from './useDashboardData';
+
+const SEVERITY_STYLES: Record<Severity, string> = {
+  low: 'text-wm-muted border-wm-border bg-white/5',
+  medium: 'text-wm-blue border-wm-blue/40 bg-wm-blue/10',
+  high: 'text-amber-300 border-amber-400/40 bg-amber-400/10',
+  critical: 'text-red-400 border-red-500/40 bg-red-500/10',
+};
 
 const ROLE_STYLES: Record<Role, string> = {
   owner: 'text-wm-green border-wm-green/40 bg-wm-green/10',
@@ -127,8 +136,13 @@ export default function Dashboard() {
   const [wlKind, setWlKind] = useState<WatchlistKind>('company');
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<Role>('analyst');
+  const [alertName, setAlertName] = useState('');
+  const [alertSev, setAlertSev] = useState<Severity>('high');
+  const [alertChannel, setAlertChannel] = useState<Channel>('email');
+  const [evalMsg, setEvalMsg] = useState<string | null>(null);
 
   const trackedEntities = d.watchlists.reduce((n, w) => n + w.items.length, 0);
+  const openEvents = d.alertEvents.filter((e) => !e.acknowledged).length;
 
   return (
     <div className="min-h-screen">
@@ -160,7 +174,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <Tile icon={ListChecks} label="Watchlists" value={d.watchlists.length} accent />
           <Tile icon={Users} label="Members" value={d.members.length} />
-          <Tile icon={Bell} label="Pending Invites" value={d.pendingInvites.length} />
+          <Tile icon={Bell} label="Open Alerts" value={openEvents} accent={openEvents > 0} />
           <Tile icon={Globe2} label="Tracked Entities" value={trackedEntities} />
         </div>
 
@@ -222,6 +236,119 @@ export default function Dashboard() {
             </div>
           </section>
         </div>
+
+        {/* Alerts */}
+        <section className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Bell size={16} className="text-wm-green" />
+              <h2 className="font-display font-bold">Alerts</h2>
+            </div>
+            <button
+              onClick={() => {
+                const n = d.runEvaluation();
+                setEvalMsg(n > 0 ? `Engine fired ${n} event${n === 1 ? '' : 's'}` : 'No signals matched');
+                window.setTimeout(() => setEvalMsg(null), 4000);
+              }}
+              className="flex items-center gap-1.5 text-xs font-mono border border-wm-border rounded px-3 py-1.5 text-wm-muted hover:text-wm-green hover:border-wm-green/40 transition-colors"
+            >
+              <PlayCircle size={14} /> Run evaluation
+              {evalMsg && <span className="text-wm-green ml-1">· {evalMsg}</span>}
+            </button>
+          </div>
+
+          <form
+            onSubmit={(e) => { e.preventDefault(); d.createAlert(alertName, alertSev, [alertChannel]); setAlertName(''); }}
+            className="flex gap-2 flex-wrap"
+          >
+            <input
+              value={alertName}
+              onChange={(e) => setAlertName(e.target.value)}
+              placeholder="New alert name…"
+              className="flex-1 min-w-[160px] bg-black/30 border border-wm-border rounded px-3 py-2 text-sm focus:outline-none focus:border-wm-green/50"
+            />
+            <select value={alertSev} onChange={(e) => setAlertSev(e.target.value as Severity)}
+              className="bg-black/30 border border-wm-border rounded px-2 py-2 text-sm focus:outline-none focus:border-wm-green/50">
+              <option value="low">Low+</option>
+              <option value="medium">Medium+</option>
+              <option value="high">High+</option>
+              <option value="critical">Critical</option>
+            </select>
+            <select value={alertChannel} onChange={(e) => setAlertChannel(e.target.value as Channel)}
+              className="bg-black/30 border border-wm-border rounded px-2 py-2 text-sm focus:outline-none focus:border-wm-green/50">
+              <option value="email">Email</option>
+              <option value="slack">Slack</option>
+              <option value="webhook">Webhook</option>
+              <option value="in_app">In-app</option>
+            </select>
+            <button type="submit" className="flex items-center gap-1 bg-wm-green/10 border border-wm-green/40 text-wm-green rounded px-3 py-2 text-sm hover:bg-wm-green/20 transition-colors">
+              <Plus size={14} /> Add
+            </button>
+          </form>
+
+          <div className="grid lg:grid-cols-2 gap-6">
+            {/* Alert definitions */}
+            <div className="glass-panel divide-y divide-wm-border">
+              {d.alerts.map((a) => (
+                <div key={a.id} className="p-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <button
+                      onClick={() => d.toggleAlert(a.id)}
+                      className={`shrink-0 w-9 h-5 rounded-full relative transition-colors ${a.enabled ? 'bg-wm-green/30' : 'bg-white/10'}`}
+                      aria-label="Toggle alert"
+                    >
+                      <span className={`absolute top-0.5 w-4 h-4 rounded-full transition-all ${a.enabled ? 'left-4 bg-wm-green' : 'left-0.5 bg-wm-muted'}`} />
+                    </button>
+                    <div className="flex flex-col min-w-0">
+                      <span className={`text-sm truncate ${a.enabled ? 'text-wm-text' : 'text-wm-muted'}`}>{a.name}</span>
+                      <span className="flex items-center gap-1.5 mt-0.5">
+                        <span className={`text-[10px] font-mono uppercase border rounded px-1.5 py-0.5 ${SEVERITY_STYLES[a.minSeverity]}`}>{a.minSeverity}+</span>
+                        {a.channels.map((c) => (
+                          <span key={c} className="text-[10px] font-mono text-wm-muted border border-wm-border rounded px-1.5 py-0.5">{c}</span>
+                        ))}
+                      </span>
+                    </div>
+                  </div>
+                  <button onClick={() => d.removeAlert(a.id)} className="text-wm-muted hover:text-red-400 shrink-0" aria-label="Delete alert">
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+              {d.alerts.length === 0 && <div className="p-4 text-sm text-wm-muted">No alerts configured.</div>}
+            </div>
+
+            {/* Live alert feed */}
+            <div className="flex flex-col gap-2">
+              <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-wm-muted font-mono">
+                <Zap size={12} className="text-wm-green" /> Live alert feed
+              </span>
+              <div className="glass-panel divide-y divide-wm-border">
+                {d.alertEvents.slice(0, 8).map((ev) => (
+                  <div key={ev.id} className={`p-3 flex items-start justify-between gap-3 ${ev.acknowledged ? 'opacity-50' : ''}`}>
+                    <div className="flex flex-col gap-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] font-mono uppercase border rounded px-1.5 py-0.5 ${SEVERITY_STYLES[ev.severity]}`}>{ev.severity}</span>
+                        <span className="text-sm text-wm-text truncate">{ev.title}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {ev.source && <span className="text-[11px] text-wm-muted">{ev.source} · {relTime(ev.createdAt)}</span>}
+                        {ev.matched.map((m) => (
+                          <span key={m} className="text-[10px] font-mono text-wm-green border border-wm-green/30 rounded px-1.5 py-0.5">{m}</span>
+                        ))}
+                      </div>
+                    </div>
+                    {!ev.acknowledged && (
+                      <button onClick={() => d.acknowledgeEvent(ev.id)} className="shrink-0 text-wm-muted hover:text-wm-green" aria-label="Acknowledge">
+                        <Check size={15} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {d.alertEvents.length === 0 && <div className="p-4 text-sm text-wm-muted">No alert events yet — run the evaluation engine.</div>}
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Members */}
         <section className="flex flex-col gap-3">

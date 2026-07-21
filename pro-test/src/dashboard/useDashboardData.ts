@@ -53,6 +53,30 @@ export interface ActivityEntry {
   at: number;
 }
 
+export type Severity = 'low' | 'medium' | 'high' | 'critical';
+export type Channel = 'email' | 'slack' | 'webhook' | 'in_app';
+
+export interface AlertDef {
+  id: string;
+  name: string;
+  minSeverity: Severity;
+  channels: Channel[];
+  watchlistId: string | null;
+  enabled: boolean;
+  updatedAt: number;
+}
+
+export interface AlertEvent {
+  id: string;
+  alertId: string;
+  severity: Severity;
+  title: string;
+  source: string | null;
+  matched: string[];
+  createdAt: number;
+  acknowledged: boolean;
+}
+
 export interface DashboardData {
   loading: boolean;
   /** True while backed by in-memory demo data (no Convex/auth wired yet). */
@@ -64,11 +88,19 @@ export interface DashboardData {
   pendingInvites: PendingInvite[];
   watchlists: Watchlist[];
   activity: ActivityEntry[];
+  alerts: AlertDef[];
+  alertEvents: AlertEvent[];
   setSelectedOrgId: (id: string) => void;
   createWatchlist: (name: string, kind: WatchlistKind) => void;
   removeWatchlist: (id: string) => void;
   inviteMember: (email: string, role: Role) => void;
   removeMember: (membershipId: string) => void;
+  createAlert: (name: string, minSeverity: Severity, channels: Channel[]) => void;
+  toggleAlert: (id: string) => void;
+  removeAlert: (id: string) => void;
+  acknowledgeEvent: (id: string) => void;
+  /** Simulate the evaluation engine against a batch of sample signals. */
+  runEvaluation: () => number;
 }
 
 const now = Date.now();
@@ -142,6 +174,35 @@ const DEMO_ACTIVITY: Record<string, ActivityEntry[]> = {
   ],
 };
 
+const DEMO_ALERTS: Record<string, AlertDef[]> = {
+  org_meridian: [
+    { id: 'al1', name: 'Semiconductor disruption', minSeverity: 'high', channels: ['email', 'slack'], watchlistId: 'w1', enabled: true, updatedAt: mins(60) },
+    { id: 'al2', name: 'Red Sea escalation', minSeverity: 'medium', channels: ['in_app'], watchlistId: 'w2', enabled: true, updatedAt: mins(240) },
+    { id: 'al3', name: 'Any critical signal', minSeverity: 'critical', channels: ['email', 'webhook'], watchlistId: null, enabled: false, updatedAt: mins(600) },
+  ],
+  org_northwind: [
+    { id: 'al4', name: 'Port congestion spike', minSeverity: 'medium', channels: ['email'], watchlistId: 'w4', enabled: true, updatedAt: mins(300) },
+  ],
+};
+
+const DEMO_ALERT_EVENTS: Record<string, AlertEvent[]> = {
+  org_meridian: [
+    { id: 'ev1', alertId: 'al2', severity: 'high', title: 'Tanker rerouted after Red Sea drone incident', source: 'Reuters', matched: ['YE'], createdAt: mins(15), acknowledged: false },
+    { id: 'ev2', alertId: 'al1', severity: 'high', title: 'TSMC warns of tool delivery delays', source: 'Bloomberg', matched: ['TSM'], createdAt: mins(90), acknowledged: true },
+  ],
+  org_northwind: [],
+};
+
+// Sample signals used by the "Run evaluation" demo button.
+const SAMPLE_SIGNALS: Array<{ severity: Severity; title: string; source: string; countries?: string[]; companies?: string[]; topics?: string[] }> = [
+  { severity: 'critical', title: 'New sanctions package targets Russian energy exports', source: 'AP', countries: ['RU'], topics: ['sanctions'] },
+  { severity: 'high', title: 'ASML export license under review', source: 'FT', companies: ['ASML'] },
+  { severity: 'medium', title: 'Suez transit volumes down 12% w/w', source: 'Lloyd’s List', countries: ['EG'] },
+  { severity: 'low', title: 'Minor port maintenance scheduled', source: 'PortWatch', countries: ['US'] },
+];
+
+const SEV_RANK: Record<Severity, number> = { low: 0, medium: 1, high: 2, critical: 3 };
+
 let idc = 0;
 const nextId = (p: string) => `${p}_${Date.now().toString(36)}_${idc++}`;
 
@@ -164,6 +225,8 @@ export function useDashboardData(): DashboardData {
   const [invitesByOrg, setInvitesByOrg] = useState<Record<string, PendingInvite[]>>(DEMO_INVITES);
   const [watchlistsByOrg, setWatchlistsByOrg] = useState<Record<string, Watchlist[]>>(DEMO_WATCHLISTS);
   const [activityByOrg, setActivityByOrg] = useState<Record<string, ActivityEntry[]>>(DEMO_ACTIVITY);
+  const [alertsByOrg, setAlertsByOrg] = useState<Record<string, AlertDef[]>>(DEMO_ALERTS);
+  const [eventsByOrg, setEventsByOrg] = useState<Record<string, AlertEvent[]>>(DEMO_ALERT_EVENTS);
 
   const orgId = selectedOrgId;
   const selectedOrg = useMemo(() => orgs.find((o) => o.id === orgId) ?? null, [orgs, orgId]);
@@ -204,6 +267,65 @@ export function useDashboardData(): DashboardData {
     if (m) logActivity(orgId, `membership.remove — ${m.name ?? m.email}`);
   }, [orgId, membersByOrg, logActivity]);
 
+  const createAlert = useCallback((name: string, minSeverity: Severity, channels: Channel[]) => {
+    if (!orgId || !name.trim()) return;
+    const al: AlertDef = { id: nextId('al'), name: name.trim(), minSeverity, channels, watchlistId: null, enabled: true, updatedAt: Date.now() };
+    setAlertsByOrg((prev) => ({ ...prev, [orgId]: [al, ...(prev[orgId] ?? [])] }));
+    logActivity(orgId, `alert.create — ${al.name}`);
+  }, [orgId, logActivity]);
+
+  const toggleAlert = useCallback((id: string) => {
+    if (!orgId) return;
+    setAlertsByOrg((prev) => ({
+      ...prev,
+      [orgId]: (prev[orgId] ?? []).map((a) => a.id === id ? { ...a, enabled: !a.enabled, updatedAt: Date.now() } : a),
+    }));
+  }, [orgId]);
+
+  const removeAlert = useCallback((id: string) => {
+    if (!orgId) return;
+    const al = (alertsByOrg[orgId] ?? []).find((a) => a.id === id);
+    setAlertsByOrg((prev) => ({ ...prev, [orgId]: (prev[orgId] ?? []).filter((a) => a.id !== id) }));
+    if (al) logActivity(orgId, `alert.delete — ${al.name}`);
+  }, [orgId, alertsByOrg, logActivity]);
+
+  const acknowledgeEvent = useCallback((id: string) => {
+    if (!orgId) return;
+    setEventsByOrg((prev) => ({
+      ...prev,
+      [orgId]: (prev[orgId] ?? []).map((e) => e.id === id ? { ...e, acknowledged: true } : e),
+    }));
+  }, [orgId]);
+
+  const runEvaluation = useCallback((): number => {
+    if (!orgId) return 0;
+    const alerts = (alertsByOrg[orgId] ?? []).filter((a) => a.enabled);
+    const watchlists = watchlistsByOrg[orgId] ?? [];
+    const now = Date.now();
+    const created: AlertEvent[] = [];
+    for (const alert of alerts) {
+      const items = alert.watchlistId
+        ? (watchlists.find((w) => w.id === alert.watchlistId)?.items ?? [])
+        : [];
+      const scope = new Set(items.map((i) => i.value.toLowerCase()));
+      for (const s of SAMPLE_SIGNALS) {
+        if (SEV_RANK[s.severity] < SEV_RANK[alert.minSeverity]) continue;
+        const hay = new Set([...(s.countries ?? []), ...(s.companies ?? []), ...(s.topics ?? [])].map((x) => x.toLowerCase()));
+        const matched = items.length === 0
+          ? []
+          : items.filter((i) => hay.has(i.value.toLowerCase()) || (i.type === 'topic' && s.title.toLowerCase().includes(i.value.toLowerCase()))).map((i) => i.value);
+        const fires = items.length === 0 ? true : matched.length > 0;
+        if (!fires) continue;
+        created.push({ id: nextId('ev'), alertId: alert.id, severity: s.severity, title: s.title, source: s.source, matched, createdAt: now, acknowledged: false });
+      }
+    }
+    if (created.length > 0) {
+      setEventsByOrg((prev) => ({ ...prev, [orgId]: [...created, ...(prev[orgId] ?? [])] }));
+      logActivity(orgId, `alert.evaluate — ${created.length} event${created.length === 1 ? '' : 's'}`);
+    }
+    return created.length;
+  }, [orgId, alertsByOrg, watchlistsByOrg, logActivity]);
+
   return {
     loading: false,
     demo: true,
@@ -214,10 +336,17 @@ export function useDashboardData(): DashboardData {
     pendingInvites: orgId ? invitesByOrg[orgId] ?? [] : [],
     watchlists: orgId ? watchlistsByOrg[orgId] ?? [] : [],
     activity: orgId ? activityByOrg[orgId] ?? [] : [],
+    alerts: orgId ? alertsByOrg[orgId] ?? [] : [],
+    alertEvents: orgId ? eventsByOrg[orgId] ?? [] : [],
     setSelectedOrgId,
     createWatchlist,
     removeWatchlist,
     inviteMember,
     removeMember,
+    createAlert,
+    toggleAlert,
+    removeAlert,
+    acknowledgeEvent,
+    runEvaluation,
   };
 }

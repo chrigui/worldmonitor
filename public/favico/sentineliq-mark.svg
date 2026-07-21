@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="SentinelIQ">
+  <defs>
+    <radialGradient id="siq-glow" cx="50%" cy="42%" r="60%">
+      <stop offset="0%" stop-color="#4ade80" stop-opacity="0.20"/>
+      <stop offset="100%" stop-color="#4ade80" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="256" height="256" rx="56" fill="#0B0F14"/>
+  <rect width="256" height="256" rx="56" fill="url(#siq-glow)"/>
+  <g fill="none" stroke="#4ade80" stroke-width="10" stroke-linecap="round">
+    <!-- sentinel eye / radar ring -->
+    <circle cx="128" cy="128" r="70" stroke-opacity="0.55"/>
+    <!-- crosshair ticks -->
+    <path d="M128 34 v22 M128 200 v22 M34 128 h22 M200 128 h22" stroke-opacity="0.8"/>
+    <!-- radar sweep -->
+    <path d="M128 128 L196 92" stroke-width="8" stroke-opacity="0.9"/>
+  </g>
+  <!-- eye -->
+  <path d="M62 128 C90 92 166 92 194 128 C166 164 90 164 62 128 Z" fill="none" stroke="#4ade80" stroke-width="12" stroke-linejoin="round"/>
+  <circle cx="128" cy="128" r="20" fill="#4ade80"/>
+  <circle cx="128" cy="128" r="7" fill="#0B0F14"/>
+</svg>

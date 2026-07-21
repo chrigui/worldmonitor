@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 200" width="760" height="200" role="img" aria-label="SentinelIQ">
+  <defs>
+    <radialGradient id="siq-glow2" cx="50%" cy="42%" r="60%">
+      <stop offset="0%" stop-color="#4ade80" stop-opacity="0.20"/>
+      <stop offset="100%" stop-color="#4ade80" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="760" height="200" fill="#0B0F14"/>
+  <!-- mark -->
+  <g transform="translate(20,20)">
+    <rect width="160" height="160" rx="36" fill="#0B0F14"/>
+    <rect width="160" height="160" rx="36" fill="url(#siq-glow2)"/>
+    <g transform="scale(0.625)">
+      <g fill="none" stroke="#4ade80" stroke-width="10" stroke-linecap="round">
+        <circle cx="128" cy="128" r="70" stroke-opacity="0.55"/>
+        <path d="M128 34 v22 M128 200 v22 M34 128 h22 M200 128 h22" stroke-opacity="0.8"/>
+        <path d="M128 128 L196 92" stroke-width="8" stroke-opacity="0.9"/>
+      </g>
+      <path d="M62 128 C90 92 166 92 194 128 C166 164 90 164 62 128 Z" fill="none" stroke="#4ade80" stroke-width="12" stroke-linejoin="round"/>
+      <circle cx="128" cy="128" r="20" fill="#4ade80"/>
+      <circle cx="128" cy="128" r="7" fill="#0B0F14"/>
+    </g>
+  </g>
+  <!-- wordmark -->
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-weight="700" font-size="72" letter-spacing="-1">
+    <text x="212" y="126" fill="#F4F6F8">Sentinel</text>
+    <text x="212" y="126" fill="#F4F6F8" opacity="0"></text>
+  </g>
+  <text x="536" y="126" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-weight="700" font-size="72" letter-spacing="-1" fill="#4ade80">IQ</text>
+  <text x="214" y="162" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-weight="500" font-size="20" letter-spacing="5" fill="#8b98a5">GLOBAL RISK INTELLIGENCE</text>
+</svg>

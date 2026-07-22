@@ -169,6 +169,49 @@ const entMatch = (e: AlertEvent, value: string) => {
   return e.matched.some((m) => m.toLowerCase() === v) || e.title.toLowerCase().includes(v);
 };
 
+export type RiskFactor = 'political' | 'economic' | 'security' | 'supplyChain' | 'cyber' | 'disaster';
+export interface RiskDriver { title: string; severity: Severity; source: string | null; url: string | null }
+export interface RiskIndexData {
+  overall: number;
+  factors: Record<RiskFactor, number>;
+  confidence: number;
+  contributingCount: number;
+  drivers: Record<RiskFactor, RiskDriver[]>;
+}
+export const RISK_FACTOR_LIST: RiskFactor[] = ['political', 'economic', 'security', 'supplyChain', 'cyber', 'disaster'];
+const RISK_KEYWORDS: Record<RiskFactor, string[]> = {
+  political: ['sanction', 'election', 'coup', 'protest', 'unrest', 'regime', 'diplomat', 'tariff', 'border'],
+  economic: ['inflation', 'default', 'currency', 'recession', 'debt', 'gdp', 'rate', 'market crash', 'devaluation'],
+  security: ['conflict', 'attack', 'drone', 'military', 'strike', 'missile', 'war', 'terror', 'shooting', 'escalat'],
+  supplyChain: ['port', 'supply', 'logistics', 'shipping', 'freight', 'shortage', 'factory', 'route', 'transit', 'chip'],
+  cyber: ['breach', 'ransomware', 'cyber', 'hack', 'malware', 'phishing', 'ddos', 'outage', 'exploit'],
+  disaster: ['earthquake', 'flood', 'wildfire', 'storm', 'hurricane', 'volcano', 'drought', 'tsunami', 'quake'],
+};
+const RISK_FACTOR_WEIGHT: Record<RiskFactor, number> = { security: 0.2, political: 0.2, supplyChain: 0.2, economic: 0.15, cyber: 0.15, disaster: 0.1 };
+function classifyLocal(title: string, matched: string[]): RiskFactor[] {
+  const hay = (title + ' ' + matched.join(' ')).toLowerCase();
+  const f = RISK_FACTOR_LIST.filter((k) => RISK_KEYWORDS[k].some((kw) => hay.includes(kw)));
+  return f.length ? f : ['security'];
+}
+function computeRiskIndexLocal(events: AlertEvent[], now: number): RiskIndexData {
+  const sums = Object.fromEntries(RISK_FACTOR_LIST.map((f) => [f, 0])) as Record<RiskFactor, number>;
+  const drivers = Object.fromEntries(RISK_FACTOR_LIST.map((f) => [f, [] as RiskDriver[]])) as Record<RiskFactor, RiskDriver[]>;
+  let contributingCount = 0;
+  for (const e of events) {
+    if (now - e.createdAt > WEEK) continue;
+    contributingCount++;
+    const w = ENTITY_WEIGHT[e.severity];
+    for (const f of classifyLocal(e.title, e.matched)) {
+      sums[f] += w;
+      if (drivers[f].length < 3) drivers[f].push({ title: e.title, severity: e.severity, source: e.source, url: null });
+    }
+  }
+  const factors = {} as Record<RiskFactor, number>;
+  let overall = 0;
+  for (const f of RISK_FACTOR_LIST) { factors[f] = Math.min(100, Math.round(sums[f] * 10)); overall += factors[f] * RISK_FACTOR_WEIGHT[f]; }
+  return { overall: Math.round(overall), factors, confidence: Math.min(0.95, Math.round((0.3 + contributingCount * 0.05) * 100) / 100), contributingCount, drivers };
+}
+
 const reportMoney = (n: number) => (n >= 1000 ? `$${(n / 1000).toFixed(1)}M` : `$${n}K`);
 function renderDemoReportHtml(orgName: string, title: string, impact: ImpactResult, events: AlertEvent[]): string {
   const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] || c));
@@ -223,6 +266,7 @@ export interface DashboardData {
   generateReport: () => Promise<{ title: string; html: string }>;
   entities: EntitySummary[];
   getDossier: (value: string) => Promise<EntityDossier>;
+  riskIndex: RiskIndexData;
 }
 
 const SEVERITY_WEIGHT: Record<Severity, number> = { low: 0.25, medium: 0.5, high: 0.75, critical: 1 };
@@ -572,6 +616,11 @@ export function useDashboardData(): DashboardData {
     setAssetsByOrg((prev) => ({ ...prev, [orgId]: (prev[orgId] ?? []).filter((a) => a.id !== id) }));
   }, [orgId]);
 
+  const riskIndex = useMemo<RiskIndexData>(() => {
+    const evs = orgId ? eventsByOrg[orgId] ?? [] : [];
+    return computeRiskIndexLocal(evs, Date.now());
+  }, [orgId, eventsByOrg]);
+
   const entities = useMemo<EntitySummary[]>(() => {
     if (!orgId) return [];
     const now = Date.now();
@@ -701,5 +750,6 @@ export function useDashboardData(): DashboardData {
     generateReport,
     entities,
     getDossier,
+    riskIndex,
   };
 }

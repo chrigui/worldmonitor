@@ -7,7 +7,7 @@ import { DashboardView } from '../Dashboard';
 import type {
   DashboardData, OrgSummary, Member, PendingInvite, Watchlist, ActivityEntry,
   AlertDef, AlertEvent, NotificationTarget, CopilotAnswer, AssetSummary, ImpactResult, ReportMeta,
-  EntitySummary, EntityDossier,
+  EntitySummary, EntityDossier, RiskIndexData,
   WatchlistKind, Role, Severity, Channel, TargetType, AssetType, Criticality,
 } from '../useDashboardData';
 import { convexClient } from './convexClient';
@@ -48,6 +48,8 @@ function LiveDashboardInner() {
   const impact = (useQuery(api.assets.assess, orgArg) as ImpactResult | undefined) ?? { rows: [], totalRevenueAtRisk: 0, directCount: 0, affectedCount: 0 };
   const reports = (useQuery(api.reports.list, orgArg) as ReportMeta[] | undefined) ?? [];
   const entities = (useQuery(api.entities.list, orgArg) as EntitySummary[] | undefined) ?? [];
+  const emptyRisk: RiskIndexData = { overall: 0, confidence: 0, contributingCount: 0, factors: { political: 0, economic: 0, security: 0, supplyChain: 0, cyber: 0, disaster: 0 }, drivers: { political: [], economic: [], security: [], supplyChain: [], cyber: [], disaster: [] } };
+  const riskIndex = (useQuery(api.riskIndex.orgRiskIndex, orgArg) as RiskIndexData | undefined) ?? emptyRisk;
 
   const createWL = useMutation(api.watchlists.create);
   const removeWL = useMutation(api.watchlists.remove);
@@ -118,6 +120,7 @@ function LiveDashboardInner() {
       if (!orgId || !convexClient) return empty;
       return (await convexClient.query(api.entities.dossier, { orgId, value })) as EntityDossier;
     },
+    riskIndex,
   };
 
   if (orgsRaw !== undefined && orgs.length === 0) {

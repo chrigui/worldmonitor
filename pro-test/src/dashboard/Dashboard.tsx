@@ -4,14 +4,25 @@ import {
   LayoutDashboard, Users, ListChecks, Bell, Activity, Plus, Trash2,
   ChevronDown, ArrowLeft, ShieldCheck, Building2, Mail, Globe2, Building, Hash,
   Zap, Check, PlayCircle, Send, Slack, Webhook, Sparkles, Loader2, ExternalLink,
-  Network, TrendingDown, FileText, Download, Crosshair, ArrowUp, ArrowDown, Minus,
+  Network, TrendingDown, FileText, Download, Crosshair, ArrowUp, ArrowDown, Minus, Gauge,
 } from 'lucide-react';
 import {
   useDashboardData, type Role, type WatchlistKind, type Watchlist, type OrgSummary,
   type Severity, type Channel, type DashboardData, type TargetType,
   type CopilotAnswer, type CopilotCitation, type AssetType, type Criticality, type ImpactResult, type AssetSummary,
   type ReportMeta, type EntitySummary, type EntityDossier, type Trend,
+  type RiskIndexData, type RiskFactor, RISK_FACTOR_LIST,
 } from './useDashboardData';
+
+const FACTOR_LABEL: Record<RiskFactor, string> = {
+  political: 'Political', economic: 'Economic', security: 'Security',
+  supplyChain: 'Supply Chain', cyber: 'Cyber', disaster: 'Disaster',
+};
+function barColor(score: number): string {
+  if (score >= 70) return 'bg-red-500';
+  if (score >= 40) return 'bg-amber-400';
+  return 'bg-wm-green';
+}
 
 function scoreColor(score: number): string {
   if (score >= 70) return 'text-red-400';
@@ -487,6 +498,56 @@ function EntityDossiers({ entities, getDossier }: { entities: EntitySummary[]; g
   );
 }
 
+function RiskIndexPanel({ risk }: { risk: RiskIndexData }) {
+  const topFactor = RISK_FACTOR_LIST.reduce((a, b) => (risk.factors[b] > risk.factors[a] ? b : a), 'security' as RiskFactor);
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <Gauge size={16} className="text-wm-green" />
+        <h2 className="font-display font-bold">Risk Index</h2>
+        <span className="text-[10px] font-mono uppercase text-wm-muted border border-wm-border rounded px-1.5 py-0.5">multi-factor</span>
+      </div>
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Overall */}
+        <div className="glass-panel p-5 flex flex-col items-center justify-center gap-2 text-center">
+          <span className="text-[11px] uppercase tracking-widest text-wm-muted font-mono">Overall Risk</span>
+          <span className={`font-display font-bold text-6xl text-glow ${scoreColor(risk.overall)}`}>{risk.overall}</span>
+          <span className="text-xs text-wm-muted">/ 100</span>
+          <div className="flex items-center gap-2 text-[11px] text-wm-muted mt-1">
+            <span className="font-mono">confidence {(risk.confidence * 100).toFixed(0)}%</span>
+            <span>· {risk.contributingCount} signals</span>
+          </div>
+        </div>
+        {/* Factor breakdown */}
+        <div className="lg:col-span-2 glass-panel p-4 flex flex-col gap-3">
+          {RISK_FACTOR_LIST.map((f) => (
+            <div key={f} className="flex items-center gap-3">
+              <span className="text-sm w-28 shrink-0 text-wm-muted">{FACTOR_LABEL[f]}</span>
+              <span className="h-2 flex-1 bg-white/10 rounded overflow-hidden">
+                <span className={`block h-full ${barColor(risk.factors[f])} transition-all`} style={{ width: `${risk.factors[f]}%` }} />
+              </span>
+              <span className={`font-mono text-sm w-8 text-right ${scoreColor(risk.factors[f])}`}>{risk.factors[f]}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      {risk.drivers[topFactor].length > 0 && (
+        <div className="flex flex-col gap-1">
+          <span className="text-[11px] uppercase tracking-wider text-wm-muted font-mono">Top {FACTOR_LABEL[topFactor]} drivers</span>
+          <div className="flex flex-col gap-1">
+            {risk.drivers[topFactor].map((d, i) => (
+              <div key={i} className="flex items-start gap-2 text-sm">
+                <span className={`text-[10px] font-mono uppercase border rounded px-1.5 py-0.5 mt-0.5 shrink-0 ${SEVERITY_STYLES[d.severity]}`}>{d.severity}</span>
+                <span className="text-wm-text">{d.title}{d.source && <span className="text-wm-muted"> — {d.source}</span>}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
 export function DashboardView({ data }: { data?: DashboardData }) {
   const demoData = useDashboardData();
   const d = data ?? demoData;
@@ -537,6 +598,8 @@ export function DashboardView({ data }: { data?: DashboardData }) {
           <Tile icon={Bell} label="Open Alerts" value={openEvents} accent={openEvents > 0} />
           <Tile icon={Globe2} label="Tracked Entities" value={trackedEntities} />
         </div>
+
+        <RiskIndexPanel risk={d.riskIndex} />
 
         <Copilot ask={d.askCopilot} />
 

@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, ListChecks, Bell, Activity, Plus, Trash2,
   ChevronDown, ArrowLeft, ShieldCheck, Building2, Mail, Globe2, Building, Hash,
   Zap, Check, PlayCircle, Send, Slack, Webhook, Sparkles, Loader2, ExternalLink,
-  Network, TrendingDown, FileText, Download, Crosshair, ArrowUp, ArrowDown, Minus, Gauge,
+  Network, TrendingDown, FileText, Download, Crosshair, ArrowUp, ArrowDown, Minus, Gauge, Lock,
 } from 'lucide-react';
 import {
   useDashboardData, type Role, type WatchlistKind, type Watchlist, type OrgSummary,
@@ -352,6 +352,79 @@ function BusinessImpact({ impact, assets, onCreate, onRemove }: {
             ))}
             {assets.length === 0 && <div className="p-3 text-xs text-wm-muted">No assets yet.</div>}
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function downloadFile(filename: string, content: string, mime = 'text/csv') {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
+function Compliance({ settings, onUpdate, onExport }: {
+  settings: DashboardData['orgSettings'];
+  onUpdate: DashboardData['updateOrgSettings'];
+  onExport: DashboardData['exportAuditLog'];
+}) {
+  const [audit, setAudit] = useState(String(settings.auditRetentionDays));
+  const [events, setEvents] = useState(String(settings.eventRetentionDays));
+  const [busy, setBusy] = useState(false);
+  const dirty = Number(audit) !== settings.auditRetentionDays || Number(events) !== settings.eventRetentionDays;
+
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <ShieldCheck size={16} className="text-wm-green" />
+        <h2 className="font-display font-bold">Compliance &amp; Audit</h2>
+      </div>
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Retention + SSO */}
+        <div className="glass-panel p-4 flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <span className="text-[11px] uppercase tracking-wider text-wm-muted font-mono">Data retention</span>
+            <label className="flex items-center justify-between text-sm">
+              <span className="text-wm-muted">Audit log (days)</span>
+              <input value={audit} onChange={(e) => setAudit(e.target.value.replace(/\D/g, ''))} inputMode="numeric" className="w-24 bg-black/30 border border-wm-border rounded px-2 py-1 text-right focus:outline-none focus:border-wm-green/50" />
+            </label>
+            <label className="flex items-center justify-between text-sm">
+              <span className="text-wm-muted">Alert events (days)</span>
+              <input value={events} onChange={(e) => setEvents(e.target.value.replace(/\D/g, ''))} inputMode="numeric" className="w-24 bg-black/30 border border-wm-border rounded px-2 py-1 text-right focus:outline-none focus:border-wm-green/50" />
+            </label>
+            <button
+              onClick={() => onUpdate({ auditRetentionDays: Number(audit) || 365, eventRetentionDays: Number(events) || 90 })}
+              disabled={!dirty}
+              className="self-end mt-1 flex items-center gap-1 bg-wm-green/10 border border-wm-green/40 text-wm-green rounded px-3 py-1.5 text-sm hover:bg-wm-green/20 transition-colors disabled:opacity-40"
+            >
+              <Check size={14} /> Save
+            </button>
+          </div>
+          <div className="border-t border-wm-border pt-3 flex items-start gap-2">
+            <Lock size={15} className="text-wm-green mt-0.5 shrink-0" />
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm">Enterprise SSO / SAML</span>
+              <span className="text-[11px] text-wm-muted">
+                {settings.requireSso ? 'Required for all members.' : 'Configure a SAML connection in Clerk (Organizations → SSO) and enforce it here.'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Audit export */}
+        <div className="glass-panel p-4 flex flex-col gap-3">
+          <span className="text-[11px] uppercase tracking-wider text-wm-muted font-mono">Audit export</span>
+          <p className="text-sm text-wm-muted">Export the immutable audit trail (who did what, when) as CSV for compliance and SIEM ingestion.</p>
+          <button
+            onClick={async () => { setBusy(true); try { const f = await onExport(); if (f.content) downloadFile(f.filename, f.content); } finally { setBusy(false); } }}
+            disabled={busy}
+            className="self-start flex items-center gap-1.5 border border-wm-border rounded px-3 py-1.5 text-sm text-wm-muted hover:text-wm-green hover:border-wm-green/40 transition-colors disabled:opacity-40"
+          >
+            {busy ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />} Export audit log (CSV)
+          </button>
         </div>
       </div>
     </section>
@@ -914,6 +987,8 @@ export function DashboardView({ data }: { data?: DashboardData }) {
             </div>
           )}
         </section>
+
+        <Compliance settings={d.orgSettings} onUpdate={d.updateOrgSettings} onExport={d.exportAuditLog} />
       </main>
     </div>
   );

@@ -212,6 +212,13 @@ function computeRiskIndexLocal(events: AlertEvent[], now: number): RiskIndexData
   return { overall: Math.round(overall), factors, confidence: Math.min(0.95, Math.round((0.3 + contributingCount * 0.05) * 100) / 100), contributingCount, drivers };
 }
 
+export interface OrgSettings { auditRetentionDays: number; eventRetentionDays: number; requireSso: boolean }
+const SETTINGS_DEFAULTS: OrgSettings = { auditRetentionDays: 365, eventRetentionDays: 90, requireSso: false };
+function toCsv(headers: string[], rows: string[][]): string {
+  const esc = (v: string) => `"${String(v).replace(/"/g, '""')}"`;
+  return [headers.map(esc).join(','), ...rows.map((r) => r.map(esc).join(','))].join('\n');
+}
+
 const reportMoney = (n: number) => (n >= 1000 ? `$${(n / 1000).toFixed(1)}M` : `$${n}K`);
 function renderDemoReportHtml(orgName: string, title: string, impact: ImpactResult, events: AlertEvent[]): string {
   const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] || c));
@@ -267,6 +274,9 @@ export interface DashboardData {
   entities: EntitySummary[];
   getDossier: (value: string) => Promise<EntityDossier>;
   riskIndex: RiskIndexData;
+  orgSettings: OrgSettings;
+  updateOrgSettings: (patch: Partial<OrgSettings>) => void;
+  exportAuditLog: () => Promise<{ filename: string; content: string }>;
 }
 
 const SEVERITY_WEIGHT: Record<Severity, number> = { low: 0.25, medium: 0.5, high: 0.75, critical: 1 };
@@ -480,6 +490,7 @@ export function useDashboardData(): DashboardData {
   const [eventsByOrg, setEventsByOrg] = useState<Record<string, AlertEvent[]>>(DEMO_ALERT_EVENTS);
   const [targetsByOrg, setTargetsByOrg] = useState<Record<string, NotificationTarget[]>>(DEMO_TARGETS);
   const [assetsByOrg, setAssetsByOrg] = useState<Record<string, AssetSummary[]>>(DEMO_ASSETS);
+  const [settingsByOrg, setSettingsByOrg] = useState<Record<string, OrgSettings>>({});
   const [reportsByOrg, setReportsByOrg] = useState<Record<string, ReportMeta[]>>({
     org_meridian: [{ id: 'rep_seed', title: 'Executive Risk Brief — prior week', periodStart: mins(60 * 24 * 7), periodEnd: mins(0), totalRevenueAtRisk: 4200, eventCount: 6, source: 'scheduled', createdAt: mins(60 * 24 * 6) }],
     org_northwind: [],
@@ -616,6 +627,18 @@ export function useDashboardData(): DashboardData {
     setAssetsByOrg((prev) => ({ ...prev, [orgId]: (prev[orgId] ?? []).filter((a) => a.id !== id) }));
   }, [orgId]);
 
+  const orgSettings = orgId ? settingsByOrg[orgId] ?? SETTINGS_DEFAULTS : SETTINGS_DEFAULTS;
+  const updateOrgSettings = useCallback((patch: Partial<OrgSettings>) => {
+    if (!orgId) return;
+    setSettingsByOrg((prev) => ({ ...prev, [orgId]: { ...(prev[orgId] ?? SETTINGS_DEFAULTS), ...patch } }));
+    logActivity(orgId, 'orgSettings.update');
+  }, [orgId, logActivity]);
+  const exportAuditLog = useCallback(async (): Promise<{ filename: string; content: string }> => {
+    const acts = orgId ? activityByOrg[orgId] ?? [] : [];
+    const content = toCsv(['timestamp', 'actor', 'action'], acts.map((a) => [new Date(a.at).toISOString(), a.actor, a.action]));
+    return { filename: `sentineliq-audit-${new Date().toISOString().slice(0, 10)}.csv`, content };
+  }, [orgId, activityByOrg]);
+
   const riskIndex = useMemo<RiskIndexData>(() => {
     const evs = orgId ? eventsByOrg[orgId] ?? [] : [];
     return computeRiskIndexLocal(evs, Date.now());
@@ -751,5 +774,8 @@ export function useDashboardData(): DashboardData {
     entities,
     getDossier,
     riskIndex,
+    orgSettings,
+    updateOrgSettings,
+    exportAuditLog,
   };
 }

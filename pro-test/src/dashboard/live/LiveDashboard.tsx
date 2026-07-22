@@ -7,7 +7,7 @@ import { DashboardView } from '../Dashboard';
 import type {
   DashboardData, OrgSummary, Member, PendingInvite, Watchlist, ActivityEntry,
   AlertDef, AlertEvent, NotificationTarget, CopilotAnswer, AssetSummary, ImpactResult, ReportMeta,
-  EntitySummary, EntityDossier, RiskIndexData,
+  EntitySummary, EntityDossier, RiskIndexData, OrgSettings,
   WatchlistKind, Role, Severity, Channel, TargetType, AssetType, Criticality,
 } from '../useDashboardData';
 import { convexClient } from './convexClient';
@@ -50,6 +50,8 @@ function LiveDashboardInner() {
   const entities = (useQuery(api.entities.list, orgArg) as EntitySummary[] | undefined) ?? [];
   const emptyRisk: RiskIndexData = { overall: 0, confidence: 0, contributingCount: 0, factors: { political: 0, economic: 0, security: 0, supplyChain: 0, cyber: 0, disaster: 0 }, drivers: { political: [], economic: [], security: [], supplyChain: [], cyber: [], disaster: [] } };
   const riskIndex = (useQuery(api.riskIndex.orgRiskIndex, orgArg) as RiskIndexData | undefined) ?? emptyRisk;
+  const orgSettings = (useQuery(api.orgSettings.get, orgArg) as OrgSettings | undefined) ?? { auditRetentionDays: 365, eventRetentionDays: 90, requireSso: false };
+  const updateSettingsM = useMutation(api.orgSettings.update);
 
   const createWL = useMutation(api.watchlists.create);
   const removeWL = useMutation(api.watchlists.remove);
@@ -121,6 +123,20 @@ function LiveDashboardInner() {
       return (await convexClient.query(api.entities.dossier, { orgId, value })) as EntityDossier;
     },
     riskIndex,
+    orgSettings,
+    updateOrgSettings: (patch: Partial<OrgSettings>) => { if (orgId) void updateSettingsM({ orgId, ...patch }); },
+    exportAuditLog: async (): Promise<{ filename: string; content: string }> => {
+      const filename = `sentineliq-audit-${new Date().toISOString().slice(0, 10)}.csv`;
+      if (!orgId || !convexClient) return { filename, content: '' };
+      const rows = (await convexClient.query(api.auditLogs.exportForOrg, { orgId })) as
+        Array<{ at: string; actor: string; action: string; targetType: string; targetId: string; metadata: string }>;
+      const esc = (v: string) => `"${String(v).replace(/"/g, '""')}"`;
+      const content = [
+        ['timestamp', 'actor', 'action', 'targetType', 'targetId', 'metadata'].map(esc).join(','),
+        ...rows.map((r) => [r.at, r.actor, r.action, r.targetType, r.targetId, r.metadata].map(esc).join(',')),
+      ].join('\n');
+      return { filename, content };
+    },
   };
 
   if (orgsRaw !== undefined && orgs.length === 0) {

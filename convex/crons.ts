@@ -20,4 +20,12 @@ crons.weekly(
   {},
 );
 
+// Daily data-retention enforcement (03:00 UTC).
+crons.daily(
+  "sentineliq data retention purge",
+  { hourUTC: 3, minuteUTC: 0 },
+  internal.retention.purgeExpired,
+  {},
+);
+
 export default crons;

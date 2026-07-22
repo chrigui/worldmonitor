@@ -268,6 +268,15 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_org", ["orgId"]),
 
+  // Per-org compliance settings (retention + SSO enforcement flag).
+  orgSettings: defineTable({
+    orgId: v.id("organizations"),
+    auditRetentionDays: v.number(),
+    eventRetentionDays: v.number(),
+    requireSso: v.boolean(),
+    updatedAt: v.number(),
+  }).index("by_org", ["orgId"]),
+
   // Immutable audit trail. Every mutating action appends one row.
   auditLogs: defineTable({
     orgId: v.id("organizations"),

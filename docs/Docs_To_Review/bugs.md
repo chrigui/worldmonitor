@@ -1,4 +1,4 @@
-# World Monitor — Bug Registry
+# SentinelIQ — Bug Registry
 
 Bugs are prefixed with `BUG-` and a three-digit number.
 Each entry includes severity, description, affected files, and dependencies on other items.

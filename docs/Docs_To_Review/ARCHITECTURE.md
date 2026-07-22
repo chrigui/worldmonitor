@@ -1,6 +1,6 @@
 # Architecture
 
-World Monitor is an AI-powered real-time global intelligence dashboard built as a TypeScript single-page application. It aggregates 30+ external data sources — covering geopolitics, military activity, financial markets, cyber threats, climate events, and more — into a unified operational picture rendered through an interactive 3D globe and a grid of specialised panels.
+SentinelIQ is an AI-powered real-time global intelligence dashboard built as a TypeScript single-page application. It aggregates 30+ external data sources — covering geopolitics, military activity, financial markets, cyber threats, climate events, and more — into a unified operational picture rendered through an interactive 3D globe and a grid of specialised panels.
 
 This document covers the full system architecture: deployment topology, variant configuration, data pipelines, signal intelligence, map rendering, caching, desktop packaging, machine-learning inference, and error handling.
 
@@ -102,7 +102,7 @@ graph TD
 
 ## 2. Variant Architecture
 
-World Monitor ships as three product variants from a single codebase. Each variant surfaces a different subset of panels, map layers, and data sources.
+SentinelIQ ships as three product variants from a single codebase. Each variant surfaces a different subset of panels, map layers, and data sources.
 
 | Variant | Domain | Focus |
 |---|---|---|
@@ -484,7 +484,7 @@ The **MapPopup** component (src/components/MapPopup.ts) provides a unified popup
 
 ## 6. Caching Architecture
 
-World Monitor employs a five-tier caching strategy to minimise API costs, reduce latency, and enable offline operation.
+SentinelIQ employs a five-tier caching strategy to minimise API costs, reduce latency, and enable offline operation.
 
 ```mermaid
 graph TD
@@ -672,7 +672,7 @@ The settings page listens for `storage` events on the toggles key, enabling cros
 
 ## 8. ML Pipeline
 
-World Monitor runs machine-learning inference directly in the browser using ONNX Runtime Web via Transformers.js, with API-based fallbacks for constrained devices.
+SentinelIQ runs machine-learning inference directly in the browser using ONNX Runtime Web via Transformers.js, with API-based fallbacks for constrained devices.
 
 ```mermaid
 graph TD
@@ -816,7 +816,7 @@ The fallback is not automatic at the ML worker level; each consumer service choo
 
 ## 9. Error Handling Hierarchy
 
-World Monitor uses a circuit-breaker pattern to manage transient failures across its many data sources, preventing cascade failures and providing graceful degradation.
+SentinelIQ uses a circuit-breaker pattern to manage transient failures across its many data sources, preventing cascade failures and providing graceful degradation.
 
 ```mermaid
 stateDiagram-v2

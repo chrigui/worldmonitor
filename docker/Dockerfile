@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-# Multi-stage build for the World Monitor web app (frontend only).
+# Multi-stage build for the SentinelIQ web app (frontend only).
 
 # Stage 1: Build the frontend with TypeScript + Vite.
 FROM node:20-alpine AS builder

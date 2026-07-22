@@ -1,7 +1,7 @@
 ---
-title: "Five Dashboards, One Platform: How World Monitor Serves Every Intelligence Need"
-description: "World Monitor runs 5 specialized dashboards from one codebase: geopolitical, tech, finance, commodity, and positive news. Switch between them instantly. All free."
-metaTitle: "5 Free Intelligence Dashboards: World, Tech, Finance, Commodity, Happy | World Monitor"
+title: "Five Dashboards, One Platform: How SentinelIQ Serves Every Intelligence Need"
+description: "SentinelIQ runs 5 specialized dashboards from one codebase: geopolitical, tech, finance, commodity, and positive news. Switch between them instantly. All free."
+metaTitle: "5 Free Intelligence Dashboards: World, Tech, Finance, Commodity, Happy | SentinelIQ"
 keywords: "intelligence dashboard variants, tech monitoring dashboard, positive news dashboard, multi-purpose intelligence platform, specialized monitoring tools"
 audience: "General tech audience, product managers, developers, knowledge workers, content creators"
 heroImage: "/blog/images/blog/five-dashboards-one-platform-worldmonitor-variants.jpg"
@@ -10,15 +10,15 @@ pubDate: "2026-02-12"
 
 Most intelligence platforms force you into a single vertical. A financial terminal. A cybersecurity feed. A conflict tracker. If your work spans multiple domains, you're left juggling subscriptions.
 
-World Monitor runs **five specialized dashboards** from a single codebase. Switch between them with one click. Each variant curates panels, layers, and data feeds for its specific audience while sharing the same underlying intelligence engine, map infrastructure, and AI capabilities.
+SentinelIQ runs **five specialized dashboards** from a single codebase. Switch between them with one click. Each variant curates panels, layers, and data feeds for its specific audience while sharing the same underlying intelligence engine, map infrastructure, and AI capabilities.
 
-## 1. World Monitor: The Geopolitical Command Center
+## 1. SentinelIQ: The Geopolitical Command Center
 
 **URL:** worldmonitor.app
 **Panels:** 45
 **Focus:** Conflicts, military, infrastructure, geopolitical risk
 
-This is the flagship. World Monitor is built for OSINT analysts, defense researchers, journalists, and anyone who needs to understand global security dynamics.
+This is the flagship. SentinelIQ is built for OSINT analysts, defense researchers, journalists, and anyone who needs to understand global security dynamics.
 
 **Key features:**
 
@@ -35,13 +35,13 @@ This is the flagship. World Monitor is built for OSINT analysts, defense researc
 
 **Who it's for:** OSINT researchers, geopolitical analysts, defense academics, journalists covering conflict, humanitarian organizations monitoring field conditions.
 
-## 2. Tech Monitor: The Silicon Valley Radar
+## 2. SentinelIQ Tech: The Silicon Valley Radar
 
 **URL:** tech.worldmonitor.app
 **Panels:** 28
 **Focus:** AI/ML, startups, cybersecurity, cloud infrastructure
 
-Tech Monitor maps the global technology landscape: where AI is being built, where startups are funded, where data centers are concentrated, and where the next unicorn might emerge.
+SentinelIQ Tech maps the global technology landscape: where AI is being built, where startups are funded, where data centers are concentrated, and where the next unicorn might emerge.
 
 **Key features:**
 
@@ -58,13 +58,13 @@ Tech Monitor maps the global technology landscape: where AI is being built, wher
 
 **Who it's for:** VC investors evaluating markets, tech executives tracking competitors, developers following industry trends, cybersecurity professionals monitoring threats.
 
-## 3. Finance Monitor: Markets with Context
+## 3. SentinelIQ Finance: Markets with Context
 
 **URL:** finance.worldmonitor.app
 **Panels:** 27
 **Focus:** Markets, central banks, forex, Gulf FDI, macro signals
 
-Finance Monitor is for traders and analysts who know that markets move on geopolitics. It combines traditional financial data with the intelligence layers that drive price action.
+SentinelIQ Finance is for traders and analysts who know that markets move on geopolitics. It combines traditional financial data with the intelligence layers that drive price action.
 
 **Key features:**
 
@@ -82,13 +82,13 @@ Finance Monitor is for traders and analysts who know that markets move on geopol
 
 **Who it's for:** Retail and institutional traders, macro investors, financial analysts, emerging market researchers, fintech builders.
 
-## 4. Commodity Monitor: Raw Materials Intelligence
+## 4. SentinelIQ Commodity: Raw Materials Intelligence
 
 **URL:** commodity.worldmonitor.app
 **Panels:** 16
 **Focus:** Mining, metals, energy, supply chain disruption
 
-Commodity Monitor tracks the physical resources that power the global economy: where they're extracted, how they're priced, and what threatens their supply.
+SentinelIQ Commodity tracks the physical resources that power the global economy: where they're extracted, how they're priced, and what threatens their supply.
 
 **Key features:**
 
@@ -99,17 +99,17 @@ Commodity Monitor tracks the physical resources that power the global economy: w
 - Pipeline infrastructure mapping
 - Energy production and refinery locations
 - Commodity-focused RSS feeds from specialist sources
-- Integration with World Monitor's conflict and disaster layers
+- Integration with SentinelIQ's conflict and disaster layers
 
 **Who it's for:** Commodity traders, supply chain managers, mining analysts, energy sector professionals, procurement teams, logistics planners.
 
-## 5. Happy Monitor: The Antidote to Doom Scrolling
+## 5. SentinelIQ Happy: The Antidote to Doom Scrolling
 
 **URL:** happy.worldmonitor.app
 **Panels:** 10
 **Focus:** Good news, human progress, conservation, renewable energy
 
-In a world of conflict feeds and crisis dashboards, Happy Monitor exists to track what's going right. It curates positive developments: scientific breakthroughs, conservation wins, renewable energy milestones, and human progress stories.
+In a world of conflict feeds and crisis dashboards, SentinelIQ Happy exists to track what's going right. It curates positive developments: scientific breakthroughs, conservation wins, renewable energy milestones, and human progress stories.
 
 **Key features:**
 
@@ -168,7 +168,7 @@ Install on any device from the browser. Includes offline map caching (500 tiles)
 
 In the web app, switch variants via the header navigation. Your preferences, language settings, and AI configuration carry across variants.
 
-The variants share a single codebase. Every improvement to the core engine benefits all five dashboards simultaneously. A map performance optimization for World Monitor automatically makes Commodity Monitor faster too.
+The variants share a single codebase. Every improvement to the core engine benefits all five dashboards simultaneously. A map performance optimization for SentinelIQ automatically makes SentinelIQ Commodity faster too.
 
 ## Why Five Variants Instead of One?
 
@@ -178,7 +178,7 @@ An OSINT analyst tracking the Taiwan Strait doesn't need stablecoin peg data clu
 
 Each variant curates the information that matters for its audience. The panels are pre-selected. The layers are prioritized. The news feeds are filtered. You get a dashboard that feels purpose-built for your work, without the cognitive load of configuring a general-purpose tool.
 
-But when you need to cross domains (the commodity trader wants to check if a conflict is affecting mining operations), switching to World Monitor is one click away.
+But when you need to cross domains (the commodity trader wants to check if a conflict is affecting mining operations), switching to SentinelIQ is one click away.
 
 ## One Platform, Zero Cost
 

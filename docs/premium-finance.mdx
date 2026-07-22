@@ -1,8 +1,8 @@
 ---
 title: "Premium Finance"
-description: "Premium finance is the finance-variant layer providing stock-analysis capabilities within World Monitor, originally inspired by a standalone daily_stock_analysis project but now fully integrated."
+description: "Premium finance is the finance-variant layer providing stock-analysis capabilities within SentinelIQ, originally inspired by a standalone daily_stock_analysis project but now fully integrated."
 ---
-Premium finance is the finance-variant layer providing stock-analysis capabilities within World Monitor. These features were originally inspired by a standalone `daily_stock_analysis` project but are now fully integrated into the World Monitor codebase.
+Premium finance is the finance-variant layer providing stock-analysis capabilities within SentinelIQ. These features were originally inspired by a standalone `daily_stock_analysis` project but are now fully integrated into the SentinelIQ codebase.
 
 This layer is intentionally split into:
 
@@ -84,7 +84,7 @@ Services and loading:
 
 ## Stock Analysis
 
-The premium stock-analysis engine was originally a TypeScript port of core logic from the standalone project, now fully native to World Monitor.
+The premium stock-analysis engine was originally a TypeScript port of core logic from the standalone project, now fully native to SentinelIQ.
 
 It computes:
 
@@ -113,7 +113,7 @@ Those fields matter because backtesting now validates stored analysis records ra
 
 ## Shared Store
 
-World Monitor still lacks a general-purpose relational backend, so premium finance currently uses Redis as the backend-owned source of truth.
+SentinelIQ still lacks a general-purpose relational backend, so premium finance currently uses Redis as the backend-owned source of truth.
 
 ### What Redis Stores
 
@@ -144,7 +144,7 @@ It is **not** a relational finance ledger yet. Long-lived querying, rich paginat
 
 ## Backtesting
 
-Backtesting in World Monitor is intentionally tied to stored analysis records, not just a raw signal replay.
+Backtesting in SentinelIQ is intentionally tied to stored analysis records, not just a raw signal replay.
 
 Current flow:
 
@@ -168,7 +168,7 @@ It:
 - caches the brief
 - avoids unnecessary regeneration before the next local morning schedule
 
-This is a World Monitor native feature, not a direct port of the original project's scheduler/automation system.
+This is a SentinelIQ native feature, not a direct port of the original project's scheduler/automation system.
 
 ---
 
@@ -190,7 +190,7 @@ This matters because a UI-only lock would still allow direct API usage from trus
 Core premium finance currently depends on:
 
 - Yahoo Finance chart/history endpoints
-- Finnhub for broader market data already used elsewhere in World Monitor
+- Finnhub for broader market data already used elsewhere in SentinelIQ
 - Google News RSS as the baseline stock-news fallback
 - the shared LLM provider chain in [llm.ts](https://github.com/koala73/worldmonitor/blob/main/server/_shared/llm.ts)
 
@@ -233,7 +233,7 @@ See [PREMIUM_FINANCE_SEARCH.md](/premium-finance-search).
 
 ## Current Boundaries
 
-This feature is valid and production-usable within World Monitor's current architecture, but some boundaries remain explicit:
+This feature is valid and production-usable within SentinelIQ's current architecture, but some boundaries remain explicit:
 
 - Redis is the canonical store for now
 - there is no standalone finance database
@@ -241,4 +241,4 @@ This feature is valid and production-usable within World Monitor's current archi
 - the original project's broader provider stack was not carried over
 - China-focused market data/search layers were intentionally excluded
 
-These boundaries keep the feature aligned with World Monitor's architecture.
+These boundaries keep the feature aligned with SentinelIQ's architecture.

@@ -1,5 +1,5 @@
 name: Bug Report
-description: Report a bug in World Monitor
+description: Report a bug in SentinelIQ
 labels: ["bug"]
 body:
   - type: markdown

@@ -1,4 +1,4 @@
-# Component Documentation — World Monitor
+# Component Documentation — SentinelIQ
 
 > Auto-generated reference for all UI components in `src/components/`.
 > Last updated: 2026-02-19
@@ -35,7 +35,7 @@
 
 ## Overview
 
-World Monitor's UI is built entirely with **vanilla TypeScript** — no React, Vue, or
+SentinelIQ's UI is built entirely with **vanilla TypeScript** — no React, Vue, or
 Angular. Every component is a plain ES class that owns its own DOM subtree and
 communicates through method calls, callbacks, and a handful of
 `document`/`window`-level custom events.
@@ -175,7 +175,7 @@ None — `Panel` is a pure base class and renders identically in all variants.
 
 ## Map System
 
-World Monitor ships two independent map renderers and an adapter that picks the
+SentinelIQ ships two independent map renderers and an adapter that picks the
 right one at runtime.
 
 ### DeckGLMap

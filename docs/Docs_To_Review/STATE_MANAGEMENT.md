@@ -1,6 +1,6 @@
 # State Management
 
-World Monitor is an AI-powered real-time global intelligence dashboard built with **vanilla TypeScript** — no framework, no reactive stores. All state is managed manually through class properties, `localStorage`, `IndexedDB`, and URL query parameters.
+SentinelIQ is an AI-powered real-time global intelligence dashboard built with **vanilla TypeScript** — no framework, no reactive stores. All state is managed manually through class properties, `localStorage`, `IndexedDB`, and URL query parameters.
 
 This document is the canonical reference for how state is stored, updated, and persisted across the application.
 
@@ -688,7 +688,7 @@ stateDiagram-v2
 
 ## 9. All localStorage Keys
 
-Complete reference of every `localStorage` key used by World Monitor:
+Complete reference of every `localStorage` key used by SentinelIQ:
 
 | Key | Purpose | Format | Source |
 |-----|---------|--------|--------|

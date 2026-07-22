@@ -12,6 +12,7 @@ import {
   Landmark, Fuel
 } from 'lucide-react';
 import { t } from './i18n';
+import Dashboard from './dashboard/Dashboard';
 import dashboardFallback from './assets/worldmonitor-7-mar-2026.jpg';
 import wiredLogo from './assets/wired-logo.svg';
 
@@ -154,13 +155,13 @@ const SlackIcon = () => (
 );
 
 const Logo = () => (
-  <a href="https://worldmonitor.app" className="flex items-center gap-2 hover:opacity-80 transition-opacity" aria-label="World Monitor — Home">
+  <a href="https://worldmonitor.app" className="flex items-center gap-2 hover:opacity-80 transition-opacity" aria-label="SentinelIQ — Home">
     <div className="relative w-8 h-8 rounded-full bg-wm-card border border-wm-border flex items-center justify-center overflow-hidden">
       <Globe className="w-5 h-5 text-wm-blue opacity-50 absolute" aria-hidden="true" />
       <Activity className="w-6 h-6 text-wm-green absolute z-10" aria-hidden="true" />
     </div>
     <div className="flex flex-col">
-      <span className="font-display font-bold text-sm leading-none tracking-tight">WORLD MONITOR</span>
+      <span className="font-display font-bold text-sm leading-none tracking-tight">SENTINELIQ</span>
       <span className="text-[9px] text-wm-muted font-mono uppercase tracking-widest leading-none mt-1">by Someone.ceo</span>
     </div>
   </a>
@@ -176,6 +177,7 @@ const Navbar = () => (
         <a href="#pro" className="hover:text-wm-green transition-colors">{t('nav.pro')}</a>
         <a href="#api" className="hover:text-wm-text transition-colors">{t('nav.api')}</a>
         <a href="#enterprise" className="hover:text-wm-text transition-colors">{t('nav.enterprise')}</a>
+        <a href="#dashboard" className="text-wm-green hover:text-green-300 transition-colors">Dashboard</a>
       </div>
       <a href="#waitlist" className="bg-wm-green text-wm-bg px-4 py-2 rounded-sm font-mono text-xs uppercase tracking-wider font-bold hover:bg-green-400 transition-colors">
         {t('nav.reserveAccess')}
@@ -431,7 +433,7 @@ const LivePreview = () => (
         <div className="relative aspect-[16/9] bg-black">
           <img
             src={dashboardFallback}
-            alt="World Monitor Dashboard"
+            alt="SentinelIQ Dashboard"
             className="absolute inset-0 w-full h-full object-cover"
           />
           <iframe
@@ -582,7 +584,7 @@ const ProShowcase = () => (
             </div>
             <div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="font-bold text-gray-200">World Monitor</span>
+                <span className="font-bold text-gray-200">SentinelIQ</span>
                 <span className="text-xs text-gray-500 bg-gray-800 px-1 rounded">APP</span>
                 <span className="text-xs text-gray-500">8:00 AM</span>
               </div>
@@ -926,7 +928,7 @@ const Footer = () => (
       <div className="flex items-center gap-3 mb-4 md:mb-0">
         <img src="/favico/favicon-32x32.png" alt="" width="28" height="28" className="rounded-full" />
         <div className="flex flex-col">
-          <span className="font-display font-bold text-sm leading-none tracking-tight text-wm-text">WORLD MONITOR</span>
+          <span className="font-display font-bold text-sm leading-none tracking-tight text-wm-text">SENTINELIQ</span>
           <span className="text-[9px] uppercase tracking-[2px] opacity-60 mt-0.5">by Someone.ceo</span>
         </div>
       </div>
@@ -1126,7 +1128,7 @@ const EnterprisePage = () => (
         <div className="flex items-center gap-3 mb-4 md:mb-0">
           <img src="/favico/favicon-32x32.png" alt="" width="28" height="28" className="rounded-full" />
           <div className="flex flex-col">
-            <span className="font-display font-bold text-sm leading-none tracking-tight text-wm-text">WORLD MONITOR</span>
+            <span className="font-display font-bold text-sm leading-none tracking-tight text-wm-text">SENTINELIQ</span>
             <span className="text-[9px] uppercase tracking-[2px] opacity-60 mt-0.5">by Someone.ceo</span>
           </div>
         </div>
@@ -1147,12 +1149,16 @@ const EnterprisePage = () => (
 
 /* ─── Page Layout ─── */
 export default function App() {
-  const [page, setPage] = useState(() => window.location.hash.startsWith('#enterprise') ? 'enterprise' : 'home');
+  const routeFor = (hash: string) =>
+    hash.startsWith('#dashboard') ? 'dashboard'
+    : hash.startsWith('#enterprise') ? 'enterprise'
+    : 'home';
+  const [page, setPage] = useState(() => routeFor(window.location.hash));
 
   useEffect(() => {
     const onHash = () => {
       const hash = window.location.hash;
-      const next = hash.startsWith('#enterprise') ? 'enterprise' : 'home';
+      const next = routeFor(hash);
       const wasEnterprise = page === 'enterprise';
       setPage(next);
       if (next === 'enterprise' && !wasEnterprise) window.scrollTo(0, 0);
@@ -1174,6 +1180,7 @@ export default function App() {
     }
   }, []);
 
+  if (page === 'dashboard') return <Dashboard />;
   if (page === 'enterprise') return <EnterprisePage />;
 
   return (

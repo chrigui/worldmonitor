@@ -7,8 +7,10 @@ import { DashboardView } from '../Dashboard';
 import type {
   DashboardData, OrgSummary, Member, PendingInvite, Watchlist, ActivityEntry,
   AlertDef, AlertEvent, NotificationTarget, CopilotAnswer, AssetSummary, ImpactResult, ReportMeta,
+  EntitySummary, EntityDossier,
   WatchlistKind, Role, Severity, Channel, TargetType, AssetType, Criticality,
 } from '../useDashboardData';
+import { convexClient } from './convexClient';
 import { SAMPLE_SIGNALS } from '../useDashboardData';
 
 // Untyped function references — avoids a hard dependency on generated code, so
@@ -45,6 +47,7 @@ function LiveDashboardInner() {
   const assets = (useQuery(api.assets.list, orgArg) as AssetSummary[] | undefined) ?? [];
   const impact = (useQuery(api.assets.assess, orgArg) as ImpactResult | undefined) ?? { rows: [], totalRevenueAtRisk: 0, directCount: 0, affectedCount: 0 };
   const reports = (useQuery(api.reports.list, orgArg) as ReportMeta[] | undefined) ?? [];
+  const entities = (useQuery(api.entities.list, orgArg) as EntitySummary[] | undefined) ?? [];
 
   const createWL = useMutation(api.watchlists.create);
   const removeWL = useMutation(api.watchlists.remove);
@@ -108,6 +111,12 @@ function LiveDashboardInner() {
       if (!orgId) return { title: 'Report', html: '<p>Select an organization.</p>' };
       const r = await generateReportAction({ orgId, days: 7 }) as { reportId: string; title: string; html: string };
       return { title: r.title, html: r.html };
+    },
+    entities,
+    getDossier: async (value: string): Promise<EntityDossier> => {
+      const empty: EntityDossier = { value, score: 0, trend: 'flat', recentCount: 0, priorCount: 0, drivers: [], watchlists: [], assets: [], sources: [] };
+      if (!orgId || !convexClient) return empty;
+      return (await convexClient.query(api.entities.dossier, { orgId, value })) as EntityDossier;
     },
   };
 

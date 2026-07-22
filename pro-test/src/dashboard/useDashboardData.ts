@@ -137,6 +137,38 @@ export interface ReportMeta {
   source: 'manual' | 'scheduled';
   createdAt: number;
 }
+export type Trend = 'up' | 'down' | 'flat';
+export interface EntitySummary { value: string; type: string; score: number; trend: Trend; eventCount: number }
+export interface EntityDriver { title: string; severity: Severity; source: string | null; url: string | null; createdAt: number }
+export interface EntityDossier {
+  value: string;
+  score: number;
+  trend: Trend;
+  recentCount: number;
+  priorCount: number;
+  drivers: EntityDriver[];
+  watchlists: string[];
+  assets: { name: string; criticality: string; revenueAtRisk: number }[];
+  sources: { name: string; url: string | null }[];
+}
+const ENTITY_WEIGHT: Record<Severity, number> = { low: 1, medium: 2, high: 4, critical: 7 };
+const WEEK = 7 * 864e5;
+function scoreEntityLocal(events: AlertEvent[], now: number): { score: number; trend: Trend; recentCount: number; priorCount: number } {
+  let recent = 0, prior = 0, recentCount = 0, priorCount = 0;
+  for (const e of events) {
+    const age = now - e.createdAt;
+    if (age <= WEEK) { recent += ENTITY_WEIGHT[e.severity]; recentCount++; }
+    else if (age <= 2 * WEEK) { prior += ENTITY_WEIGHT[e.severity]; priorCount++; }
+  }
+  const score = Math.min(100, Math.round(recent * 12));
+  const trend: Trend = recent > prior * 1.15 && recent > 0 ? 'up' : recent < prior * 0.85 ? 'down' : 'flat';
+  return { score, trend, recentCount, priorCount };
+}
+const entMatch = (e: AlertEvent, value: string) => {
+  const v = value.trim().toLowerCase();
+  return e.matched.some((m) => m.toLowerCase() === v) || e.title.toLowerCase().includes(v);
+};
+
 const reportMoney = (n: number) => (n >= 1000 ? `$${(n / 1000).toFixed(1)}M` : `$${n}K`);
 function renderDemoReportHtml(orgName: string, title: string, impact: ImpactResult, events: AlertEvent[]): string {
   const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] || c));
@@ -189,6 +221,8 @@ export interface DashboardData {
   removeAsset: (id: string) => void;
   reports: ReportMeta[];
   generateReport: () => Promise<{ title: string; html: string }>;
+  entities: EntitySummary[];
+  getDossier: (value: string) => Promise<EntityDossier>;
 }
 
 const SEVERITY_WEIGHT: Record<Severity, number> = { low: 0.25, medium: 0.5, high: 0.75, critical: 1 };
@@ -538,6 +572,47 @@ export function useDashboardData(): DashboardData {
     setAssetsByOrg((prev) => ({ ...prev, [orgId]: (prev[orgId] ?? []).filter((a) => a.id !== id) }));
   }, [orgId]);
 
+  const entities = useMemo<EntitySummary[]>(() => {
+    if (!orgId) return [];
+    const now = Date.now();
+    const evs = eventsByOrg[orgId] ?? [];
+    const cand = new Map<string, { type: string; label: string }>();
+    for (const w of watchlistsByOrg[orgId] ?? []) for (const it of w.items) {
+      const k = it.value.toLowerCase();
+      if (!cand.has(k)) cand.set(k, { type: it.type, label: it.label ?? it.value });
+    }
+    for (const a of assetsByOrg[orgId] ?? []) for (const e of a.entities) {
+      const k = e.value.toLowerCase();
+      if (!cand.has(k)) cand.set(k, { type: e.type, label: e.value });
+    }
+    const out: EntitySummary[] = [];
+    for (const [k, meta] of cand) {
+      const matching = evs.filter((e) => entMatch(e, k));
+      const s = scoreEntityLocal(matching, now);
+      out.push({ value: meta.label, type: meta.type, score: s.score, trend: s.trend, eventCount: matching.length });
+    }
+    return out.sort((a, b) => b.score - a.score || b.eventCount - a.eventCount).slice(0, 40);
+  }, [orgId, eventsByOrg, watchlistsByOrg, assetsByOrg]);
+
+  const getDossier = useCallback(async (value: string): Promise<EntityDossier> => {
+    const oid = orgId;
+    const now = Date.now();
+    const evs = (oid ? eventsByOrg[oid] ?? [] : []).filter((e) => entMatch(e, value));
+    const s = scoreEntityLocal(evs, now);
+    const lists = (oid ? watchlistsByOrg[oid] ?? [] : []).filter((w) => w.items.some((it) => it.value.toLowerCase() === value.toLowerCase()));
+    const assetsHit = (oid ? assetsByOrg[oid] ?? [] : []).filter((a) => a.entities.some((e) => e.value.toLowerCase() === value.toLowerCase()));
+    const srcMap = new Map<string, string | null>();
+    for (const e of evs) if (e.source) srcMap.set(e.source, null);
+    return {
+      value,
+      score: s.score, trend: s.trend, recentCount: s.recentCount, priorCount: s.priorCount,
+      drivers: evs.slice(0, 8).map((e) => ({ title: e.title, severity: e.severity, source: e.source, url: null, createdAt: e.createdAt })),
+      watchlists: lists.map((w) => w.name),
+      assets: assetsHit.map((a) => ({ name: a.name, criticality: a.criticality, revenueAtRisk: a.revenueAtRisk })),
+      sources: [...srcMap.entries()].map(([name, url]) => ({ name, url })),
+    };
+  }, [orgId, eventsByOrg, watchlistsByOrg, assetsByOrg]);
+
   const generateReport = useCallback(async (): Promise<{ title: string; html: string }> => {
     const oid = orgId;
     if (!oid) return { title: 'Report', html: '<p>Select an organization.</p>' };
@@ -624,5 +699,7 @@ export function useDashboardData(): DashboardData {
     removeAsset,
     reports: orgId ? reportsByOrg[orgId] ?? [] : [],
     generateReport,
+    entities,
+    getDossier,
   };
 }

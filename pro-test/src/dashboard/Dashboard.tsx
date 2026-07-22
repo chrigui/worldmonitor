@@ -4,14 +4,25 @@ import {
   LayoutDashboard, Users, ListChecks, Bell, Activity, Plus, Trash2,
   ChevronDown, ArrowLeft, ShieldCheck, Building2, Mail, Globe2, Building, Hash,
   Zap, Check, PlayCircle, Send, Slack, Webhook, Sparkles, Loader2, ExternalLink,
-  Network, TrendingDown, FileText, Download,
+  Network, TrendingDown, FileText, Download, Crosshair, ArrowUp, ArrowDown, Minus,
 } from 'lucide-react';
 import {
   useDashboardData, type Role, type WatchlistKind, type Watchlist, type OrgSummary,
   type Severity, type Channel, type DashboardData, type TargetType,
   type CopilotAnswer, type CopilotCitation, type AssetType, type Criticality, type ImpactResult, type AssetSummary,
-  type ReportMeta,
+  type ReportMeta, type EntitySummary, type EntityDossier, type Trend,
 } from './useDashboardData';
+
+function scoreColor(score: number): string {
+  if (score >= 70) return 'text-red-400';
+  if (score >= 40) return 'text-amber-300';
+  return 'text-wm-green';
+}
+function TrendIcon({ trend }: { trend: Trend }) {
+  if (trend === 'up') return <ArrowUp size={13} className="text-red-400" />;
+  if (trend === 'down') return <ArrowDown size={13} className="text-wm-green" />;
+  return <Minus size={13} className="text-wm-muted" />;
+}
 
 const TIER_STYLES: Record<Criticality, string> = {
   tier1: 'text-red-400 border-red-500/40 bg-red-500/10',
@@ -379,6 +390,103 @@ function Reports({ reports, onGenerate }: { reports: ReportMeta[]; onGenerate: (
   );
 }
 
+function EntityDossiers({ entities, getDossier }: { entities: EntitySummary[]; getDossier: (v: string) => Promise<EntityDossier> }) {
+  const [selected, setSelected] = useState<EntityDossier | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const open = async (value: string) => {
+    setLoading(true);
+    try { setSelected(await getDossier(value)); } finally { setLoading(false); }
+  };
+
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <Crosshair size={16} className="text-wm-green" />
+        <h2 className="font-display font-bold">Entity Dossiers</h2>
+      </div>
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Directory */}
+        <div className="glass-panel divide-y divide-wm-border max-h-96 overflow-y-auto">
+          {entities.map((e) => (
+            <button key={e.value} onClick={() => open(e.value)}
+              className={`w-full text-left p-3 flex items-center justify-between gap-3 hover:bg-white/[0.03] transition-colors ${selected?.value === e.value ? 'bg-white/[0.04]' : ''}`}>
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-[10px] font-mono uppercase text-wm-muted border border-wm-border rounded px-1.5 py-0.5">{e.type}</span>
+                <span className="text-sm truncate">{e.value}</span>
+              </div>
+              <span className="flex items-center gap-1.5 shrink-0">
+                <TrendIcon trend={e.trend} />
+                <span className={`font-display font-bold text-sm ${scoreColor(e.score)}`}>{e.score}</span>
+              </span>
+            </button>
+          ))}
+          {entities.length === 0 && <div className="p-4 text-sm text-wm-muted">No tracked entities yet — add watchlists or assets.</div>}
+        </div>
+
+        {/* Dossier detail */}
+        <div className="lg:col-span-2 glass-panel p-4 min-h-[12rem]">
+          {loading && <div className="flex items-center gap-2 text-sm text-wm-muted"><Loader2 size={14} className="animate-spin text-wm-green" /> Building dossier…</div>}
+          {!loading && !selected && <div className="text-sm text-wm-muted flex items-center h-full">Select an entity to view its risk dossier.</div>}
+          {!loading && selected && (
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-3">
+                  <span className="font-display font-bold text-lg">{selected.value}</span>
+                  <span className="flex items-center gap-1"><TrendIcon trend={selected.trend} /><span className="text-xs text-wm-muted font-mono">{selected.trend}</span></span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`font-display font-bold text-3xl ${scoreColor(selected.score)} text-glow`}>{selected.score}</span>
+                  <span className="text-xs text-wm-muted">risk score</span>
+                </div>
+              </div>
+              <div className="text-[11px] text-wm-muted font-mono">{selected.recentCount} events this week · {selected.priorCount} prior week</div>
+
+              {selected.assets.length > 0 && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-[11px] uppercase tracking-wider text-wm-muted font-mono">Exposed assets</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {selected.assets.map((a, i) => (
+                      <span key={i} className="text-xs border border-wm-border rounded px-2 py-0.5">{a.name} <span className="text-red-400">{money(a.revenueAtRisk)}</span></span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {selected.watchlists.length > 0 && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-[11px] uppercase tracking-wider text-wm-muted font-mono">On watchlists</span>
+                  <div className="flex flex-wrap gap-1.5">{selected.watchlists.map((w, i) => <span key={i} className="text-xs text-wm-green border border-wm-green/30 rounded px-2 py-0.5">{w}</span>)}</div>
+                </div>
+              )}
+              <div className="flex flex-col gap-1">
+                <span className="text-[11px] uppercase tracking-wider text-wm-muted font-mono">Risk drivers</span>
+                <div className="flex flex-col gap-1.5">
+                  {selected.drivers.map((d, i) => (
+                    <div key={i} className="flex items-start gap-2 text-sm">
+                      <span className={`text-[10px] font-mono uppercase border rounded px-1.5 py-0.5 mt-0.5 shrink-0 ${SEVERITY_STYLES[d.severity]}`}>{d.severity}</span>
+                      <span className="text-wm-text">{d.title}{d.source && <span className="text-wm-muted"> — {d.source}</span>}</span>
+                    </div>
+                  ))}
+                  {selected.drivers.length === 0 && <span className="text-sm text-wm-muted">No recent events for this entity.</span>}
+                </div>
+              </div>
+              {selected.sources.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {selected.sources.map((s, i) => (
+                    s.url
+                      ? <a key={i} href={s.url} target="_blank" rel="noreferrer" className="text-[11px] text-wm-blue border border-wm-border rounded px-2 py-0.5 flex items-center gap-1">{s.name}<ExternalLink size={10} /></a>
+                      : <span key={i} className="text-[11px] text-wm-muted border border-wm-border rounded px-2 py-0.5">{s.name}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function DashboardView({ data }: { data?: DashboardData }) {
   const demoData = useDashboardData();
   const d = data ?? demoData;
@@ -435,6 +543,8 @@ export function DashboardView({ data }: { data?: DashboardData }) {
         <BusinessImpact impact={d.impact} assets={d.assets} onCreate={d.createAsset} onRemove={d.removeAsset} />
 
         <Reports reports={d.reports} onGenerate={d.generateReport} />
+
+        <EntityDossiers entities={d.entities} getDossier={d.getDossier} />
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Watchlists */}
